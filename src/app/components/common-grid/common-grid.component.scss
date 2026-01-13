@@ -25,12 +25,12 @@
     display: inline-block !important;
     width: 20px;
     height: 20px;
-    // State 1: DEFAULT - black filter icon
+    // State 1: DEFAULT - gray filter icon
     background-image: url('/assets/icons/filter-icon.svg');
     background-size: contain;
     background-repeat: no-repeat;
     background-position: center;
-    filter: brightness(0); // Black color
+    filter: none; // Use SVG's native gray color
     transition: all 0.2s ease; // Smooth transition
 
     // Hide the default icon content
@@ -45,14 +45,7 @@
   display: none !important;
 }
 
-/* State 2: FOCUSED - blue icon when menu is open */
-::ng-deep .ag-header-cell-menu-button.ag-header-menu-button-open {
-  .ag-icon-menu {
-    filter: invert(35%) sepia(95%) saturate(1627%) hue-rotate(188deg) brightness(92%) contrast(88%); // Blue color
-  }
-}
-
-/* State 3: ACTIVE - different icon with badge when filter is applied */
+/* State 2: ACTIVE - badge icon when filter is applied */
 ::ng-deep .ag-header-cell-filtered {
   .ag-header-cell-menu-button {
     // Remove background since the active icon has its own background
@@ -61,16 +54,6 @@
 
     .ag-icon-menu {
       // Use the custom active state icon (with built-in colors)
-      background-image: url('/assets/icons/filter-icon-active.svg') !important;
-      // Remove color filter since icon has its own colors
-      filter: none !important;
-    }
-  }
-
-  // When filtered AND menu is open
-  .ag-header-cell-menu-button.ag-header-menu-button-open {
-    .ag-icon-menu {
-      // Keep active icon with its built-in colors
       background-image: url('/assets/icons/filter-icon-active.svg') !important;
       filter: none !important;
     }
