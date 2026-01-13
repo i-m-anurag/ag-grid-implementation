@@ -1,0 +1,23 @@
+<div class="custom-filter-container">
+  <div class="filter-header">
+    <label for="filterInput">Search:</label>
+  </div>
+  <div class="filter-body">
+    <input
+      type="text"
+      id="filterInput"
+      class="custom-filter-input"
+      [value]="filterText"
+      (input)="onFilterTextChanged($event)"
+      placeholder="Enter text to filter..."
+    />
+  </div>
+  <div class="filter-footer">
+    <button 
+      class="clear-button" 
+      (click)="clearFilter()"
+      [disabled]="filterText === ''">
+      Clear
+    </button>
+  </div>
+</div>
