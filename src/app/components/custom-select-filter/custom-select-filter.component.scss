@@ -20,11 +20,41 @@
 
 .option-content {
     flex: 1;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.checkbox-wrapper {
+    flex-shrink: 0;
+}
+
+.checkbox {
+    width: 18px;
+    height: 18px;
+    border: 2px solid #D1D5DB;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+    background-color: white;
+
+    &.checked {
+        background-color: #3B82F6;
+        border-color: #3B82F6;
+    }
+}
+
+.check-mark {
+    width: 12px;
+    height: 12px;
 }
 
 .option-text {
     font-size: 14px;
     color: #374151;
+    flex: 1;
 }
 
 .status-badge {
@@ -35,9 +65,5 @@
     font-weight: 500;
     text-align: center;
     white-space: nowrap;
-}
-
-.check-icon {
-    margin-left: 12px;
-    flex-shrink: 0;
+    flex: 1;
 }

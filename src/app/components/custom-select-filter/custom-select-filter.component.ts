@@ -7,6 +7,7 @@ export interface CustomSelectFilterParams extends IFilterParams {
     variant?: 'default' | 'badge';
     badgeColors?: { [key: string]: { bg: string; text: string } };
     filterMode?: 'client' | 'server';
+    selectionMode?: 'single' | 'multiple'; // Single or multiple selection
     onFilterChange?: (selectedOptions: string[]) => void;
 }
 
@@ -22,6 +23,7 @@ export class CustomSelectFilterComponent implements IFilterAngularComp {
     variant: 'default' | 'badge' = 'default';
     badgeColors: { [key: string]: { bg: string; text: string } } = {};
     filterMode: 'client' | 'server' = 'client';
+    selectionMode: 'single' | 'multiple' = 'multiple'; // Default to multiple
 
     agInit(params: CustomSelectFilterParams): void {
         this.params = params;
@@ -29,12 +31,23 @@ export class CustomSelectFilterComponent implements IFilterAngularComp {
         this.variant = params.variant || 'default';
         this.badgeColors = params.badgeColors || {};
         this.filterMode = params.filterMode || 'client';
+        this.selectionMode = params.selectionMode || 'multiple';
 
-        this.selectedOptions.add('All');
+        // For single select mode, don't show "All" option
+        if (this.selectionMode === 'single') {
+            // No initial selection for single mode
+        } else {
+            // Multi-select mode - show "All" by default
+            this.selectedOptions.add('All');
+        }
     }
 
     get allOptions(): string[] {
-        return ['All', ...this.options];
+        // Only include "All" for multi-select mode
+        if (this.selectionMode === 'multiple') {
+            return ['All', ...this.options];
+        }
+        return this.options;
     }
 
     isFilterActive(): boolean {
@@ -82,18 +95,25 @@ export class CustomSelectFilterComponent implements IFilterAngularComp {
     }
 
     toggleOption(option: string): void {
-        if (option === 'All') {
+        if (this.selectionMode === 'single') {
+            // Single select mode - only one option can be selected
             this.selectedOptions.clear();
-            this.selectedOptions.add('All');
+            this.selectedOptions.add(option);
         } else {
-            this.selectedOptions.delete('All');
-            if (this.selectedOptions.has(option)) {
-                this.selectedOptions.delete(option);
-                if (this.selectedOptions.size === 0) {
-                    this.selectedOptions.add('All');
-                }
+            // Multi-select mode
+            if (option === 'All') {
+                this.selectedOptions.clear();
+                this.selectedOptions.add('All');
             } else {
-                this.selectedOptions.add(option);
+                this.selectedOptions.delete('All');
+                if (this.selectedOptions.has(option)) {
+                    this.selectedOptions.delete(option);
+                    if (this.selectedOptions.size === 0) {
+                        this.selectedOptions.add('All');
+                    }
+                } else {
+                    this.selectedOptions.add(option);
+                }
             }
         }
 

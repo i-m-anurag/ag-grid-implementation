@@ -1,14 +1,17 @@
-import { Component, Input, Output, EventEmitter } from '@angular/core';
+import { Component, Input, Output, EventEmitter, OnDestroy } from '@angular/core';
 import { ColDef, GridOptions, GridReadyEvent } from 'ag-grid-community';
+import { Subject } from 'rxjs';
+import { debounceTime } from 'rxjs/operators';
 
 export interface GridApiConfig {
-    mode?: 'client' | 'server'; // Client-side or server-side data
-    filterUrl?: string; // API endpoint for filtering
-    paginationUrl?: string; // API endpoint for pagination
-    dataUrl?: string; // API endpoint for initial data load
-    columnMapping?: { [key: string]: string }; // Map grid column field to API field names
-    onFilterChange?: (filters: any) => void; // Callback when filters change
-    onDataFetch?: (response: any) => any[]; // Transform API response to grid data
+    mode?: 'client' | 'server';
+    filterUrl?: string;
+    paginationUrl?: string;
+    dataUrl?: string;
+    columnMapping?: { [key: string]: string };
+    debounceTime?: number; // Debounce time for API calls in milliseconds (default: 300ms)
+    onFilterChange?: (filters: any) => void;
+    onDataFetch?: (response: any) => any[];
 }
 
 @Component({
@@ -16,25 +19,43 @@ export interface GridApiConfig {
     templateUrl: './common-grid.component.html',
     styleUrls: ['./common-grid.component.scss']
 })
-export class CommonGridComponent {
+export class CommonGridComponent implements OnDestroy {
     @Input() columnDefs: ColDef[] = [];
     @Input() rowData: any[] = [];
     @Input() defaultColDef: ColDef = {};
     @Input() paginationPageSize: number = 10;
-    @Input() apiConfig: GridApiConfig = { mode: 'client' }; // API configuration
+    @Input() apiConfig: GridApiConfig = { mode: 'client' };
     @Output() gridReady = new EventEmitter<GridReadyEvent>();
     @Output() filterChanged = new EventEmitter<any>();
+
+    private filterSubject = new Subject<any>();
+    private gridApi: any;
 
     // Grid options with default settings
     public gridOptions: GridOptions = {
         pagination: true,
         paginationPageSize: this.paginationPageSize,
-        suppressPaginationPanel: true, // Hide default pagination
+        suppressPaginationPanel: true,
         domLayout: 'normal'
     };
 
+    constructor() {
+        // Setup debounced filter handling
+        const debounceMs = this.apiConfig.debounceTime || 300;
+        this.filterSubject.pipe(
+            debounceTime(debounceMs)
+        ).subscribe((filterModel: any) => {
+            this.handleFilterChange(filterModel);
+        });
+    }
+
+    ngOnDestroy(): void {
+        this.filterSubject.complete();
+    }
+
     onGridReady(params: GridReadyEvent) {
         console.log('Grid is ready');
+        this.gridApi = params.api;
         this.gridReady.emit(params);
 
         // If server mode, load initial data from API
@@ -49,10 +70,14 @@ export class CommonGridComponent {
     }
 
     onFilterChanged(event: any) {
-        // Emit filter change event to parent
         const filterModel = event.api.getFilterModel();
         this.filterChanged.emit(filterModel);
 
+        // Push to subject for debouncing
+        this.filterSubject.next(filterModel);
+    }
+
+    private handleFilterChange(filterModel: any): void {
         // If using server-side filtering, notify parent
         if (this.apiConfig.mode === 'server' && this.apiConfig.onFilterChange) {
             const mappedFilters = this.mapFiltersToApi(filterModel);

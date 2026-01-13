@@ -65,28 +65,12 @@ export class CustomTextFilterComponent implements IFilterAngularComp {
     }
 
     onSearchChange(): void {
+        // Debouncing is now handled by common-grid component
+        // Just trigger the filter changed callback
         if (this.filterMode === 'server') {
             if (this.params.onFilterChange) {
                 this.params.onFilterChange(this.searchText);
             }
-
-            /* 
-            // Server-side filtering example (commented out)
-            // Get the API field name from column mapping (passed via context)
-            const apiFieldName = this.params.context?.apiConfig?.columnMapping?.[this.params.colDef.field!] 
-              || this.params.colDef.field;
-            
-            // Build filter payload with mapped field name
-            const filterPayload = {
-              [apiFieldName]: this.searchText,
-              filterType: 'text'
-            };
-            
-            // Call parent's filter handler which manages the API call
-            if (this.params.context?.apiConfig?.onFilterChange) {
-              this.params.context.apiConfig.onFilterChange(filterPayload);
-            }
-            */
         } else {
             this.params.filterChangedCallback();
         }

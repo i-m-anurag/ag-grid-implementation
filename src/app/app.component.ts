@@ -32,6 +32,7 @@ export class AppComponent implements AfterViewInit {
     filterUrl: '/api/chats/filter', // API endpoint for filtering
     paginationUrl: '/api/chats/paginate', // API endpoint for pagination
     dataUrl: '/api/chats', // API endpoint for initial data
+    debounceTime: 500, // Wait 500ms after last filter change before calling API
     // Map grid column names to API field names
     columnMapping: {
       'chatId': 'chat_id',
@@ -43,7 +44,7 @@ export class AppComponent implements AfterViewInit {
     },
     // Callback when filters change (for server-side mode)
     onFilterChange: (filters: any) => {
-      console.log('Filters changed:', filters);
+      console.log('Filters changed (debounced):', filters);
       // Add your API call here to fetch filtered data
       /* 
       this.httpClient.post(this.gridApiConfig.filterUrl!, filters)
@@ -77,7 +78,7 @@ export class AppComponent implements AfterViewInit {
       filter: CustomTextFilterComponent,
       filterParams: {
         placeholder: 'Filter Chat ID...',
-        filterMode: 'client' // 'client' or 'server'
+        filterMode: 'client'
       },
       minWidth: 150,
       sortable: true,
@@ -99,7 +100,8 @@ export class AppComponent implements AfterViewInit {
       filter: CustomSelectFilterComponent,
       filterParams: {
         options: ['English', 'Arabic', 'Spanish', 'French', 'German', 'Italian'],
-        variant: 'default'
+        variant: 'default',
+        selectionMode: 'single' // Single selection for language
       },
       minWidth: 120,
       sortable: true
@@ -129,6 +131,7 @@ export class AppComponent implements AfterViewInit {
       filterParams: {
         options: ['Resolved', 'Pending', 'In Progress', 'Closed'],
         variant: 'badge',
+        selectionMode: 'multiple', // Multiple selection for status
         badgeColors: {
           'resolved': { bg: '#D1FAE5', text: '#059669' },
           'pending': { bg: '#FEF3C7', text: '#D97706' },
