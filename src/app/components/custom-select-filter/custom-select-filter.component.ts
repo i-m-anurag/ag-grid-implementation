@@ -6,6 +6,8 @@ export interface CustomSelectFilterParams extends IFilterParams {
     options: string[];
     variant?: 'default' | 'badge';
     badgeColors?: { [key: string]: { bg: string; text: string } };
+    filterMode?: 'client' | 'server';
+    onFilterChange?: (selectedOptions: string[]) => void;
 }
 
 @Component({
@@ -19,14 +21,15 @@ export class CustomSelectFilterComponent implements IFilterAngularComp {
     selectedOptions: Set<string> = new Set();
     variant: 'default' | 'badge' = 'default';
     badgeColors: { [key: string]: { bg: string; text: string } } = {};
+    filterMode: 'client' | 'server' = 'client';
 
     agInit(params: CustomSelectFilterParams): void {
         this.params = params;
         this.options = params.options || [];
         this.variant = params.variant || 'default';
         this.badgeColors = params.badgeColors || {};
+        this.filterMode = params.filterMode || 'client';
 
-        // Initially select "All"
         this.selectedOptions.add('All');
     }
 
@@ -39,6 +42,10 @@ export class CustomSelectFilterComponent implements IFilterAngularComp {
     }
 
     doesFilterPass(params: IDoesFilterPassParams): boolean {
+        if (this.filterMode === 'server') {
+            return true;
+        }
+
         if (this.selectedOptions.has('All') || this.selectedOptions.size === 0) {
             return true;
         }
@@ -59,12 +66,15 @@ export class CustomSelectFilterComponent implements IFilterAngularComp {
     }
 
     getModel() {
-        return this.isFilterActive() ? Array.from(this.selectedOptions) : null;
+        return this.isFilterActive() ? {
+            options: Array.from(this.selectedOptions),
+            mode: this.filterMode
+        } : null;
     }
 
     setModel(model: any): void {
         if (model) {
-            this.selectedOptions = new Set(model);
+            this.selectedOptions = new Set(model.options || model);
         } else {
             this.selectedOptions.clear();
             this.selectedOptions.add('All');
@@ -86,7 +96,33 @@ export class CustomSelectFilterComponent implements IFilterAngularComp {
                 this.selectedOptions.add(option);
             }
         }
-        this.params.filterChangedCallback();
+
+        if (this.filterMode === 'server') {
+            const selected = Array.from(this.selectedOptions);
+            if (this.params.onFilterChange) {
+                this.params.onFilterChange(selected);
+            }
+
+            /* 
+            // Server-side filtering example (commented out)
+            // Get the API field name from column mapping
+            const apiFieldName = this.params.context?.apiConfig?.columnMapping?.[this.params.colDef.field!] 
+              || this.params.colDef.field;
+            
+            // Build filter payload with mapped field name
+            const filterPayload = {
+              [apiFieldName]: selected.filter(opt => opt !== 'All'),
+              filterType: 'select'
+            };
+            
+            // Call parent's filter handler
+            if (this.params.context?.apiConfig?.onFilterChange) {
+              this.params.context.apiConfig.onFilterChange(filterPayload);
+            }
+            */
+        } else {
+            this.params.filterChangedCallback();
+        }
     }
 
     isSelected(option: string): boolean {

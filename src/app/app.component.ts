@@ -5,6 +5,8 @@ import { ChatStatusBadgeComponent } from './components/chat-status-badge/chat-st
 import { ActionCellRendererComponent } from './components/action-cell-renderer/action-cell-renderer.component';
 import { CustomSelectFilterComponent } from './components/custom-select-filter/custom-select-filter.component';
 import { CustomDateFilterComponent } from './components/custom-date-filter/custom-date-filter.component';
+import { PaginationConfig } from './components/custom-pagination/custom-pagination.component';
+import { GridApiConfig } from './components/common-grid/common-grid.component';
 
 interface ChatData {
   chatId: string;
@@ -24,12 +26,59 @@ export class AppComponent implements AfterViewInit {
   title = 'AG-Grid Implementation - Chat Management';
   gridApi!: GridApi;
 
+  // Grid API Configuration
+  gridApiConfig: GridApiConfig = {
+    mode: 'client', // Switch to 'server' for API-based filtering
+    filterUrl: '/api/chats/filter', // API endpoint for filtering
+    paginationUrl: '/api/chats/paginate', // API endpoint for pagination
+    dataUrl: '/api/chats', // API endpoint for initial data
+    // Map grid column names to API field names
+    columnMapping: {
+      'chatId': 'chat_id',
+      'chatTopic': 'topic',
+      'language': 'lang',
+      'startDateTime': 'start_date_time',
+      'duration': 'duration_seconds',
+      'chatStatus': 'status'
+    },
+    // Callback when filters change (for server-side mode)
+    onFilterChange: (filters: any) => {
+      console.log('Filters changed:', filters);
+      // Add your API call here to fetch filtered data
+      /* 
+      this.httpClient.post(this.gridApiConfig.filterUrl!, filters)
+        .subscribe((response: any) => {
+          this.rowData = response.data;
+        });
+      */
+    },
+    // Transform API response to grid-compatible format
+    onDataFetch: (response: any) => {
+      // Transform API response if needed
+      return response.data || response;
+    }
+  };
+
+  // Pagination configuration
+  paginationConfig: PaginationConfig = {
+    mode: 'client', // 'client' or 'server'
+    totalRecords: 0, // Set this when using server mode
+    onPageChange: (page: number, pageSize: number) => {
+      console.log(`Page changed to ${page}, page size: ${pageSize}`);
+      // Add your server-side pagination API call here
+    }
+  };
+
   // Column definitions with custom filters
   columnDefs: ColDef[] = [
     {
       field: 'chatId',
       headerName: 'Chat ID',
-      filter: 'agTextColumnFilter',
+      filter: CustomTextFilterComponent,
+      filterParams: {
+        placeholder: 'Filter Chat ID...',
+        filterMode: 'client' // 'client' or 'server'
+      },
       minWidth: 150,
       sortable: true,
       cellClass: 'bold-cell'

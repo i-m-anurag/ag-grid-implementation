@@ -7,6 +7,7 @@
     [defaultColDef]="defaultColDef"
     [gridOptions]="gridOptions"
     (gridReady)="onGridReady($event)"
-    (firstDataRendered)="onFirstDataRendered($event)">
+    (firstDataRendered)="onFirstDataRendered($event)"
+    (filterChanged)="onFilterChanged($event)">
   </ag-grid-angular>
 </div>
