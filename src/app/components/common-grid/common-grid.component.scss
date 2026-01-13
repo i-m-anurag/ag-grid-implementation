@@ -1,10 +1,14 @@
+/* Common Grid Component Styles */
 .grid-container {
   width: 100%;
   height: 100%;
-  min-height: 400px;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+  overflow: hidden;
 }
 
-/* Hide the default AG-Grid icons */
+/* Custom Filter Icon Styles - keep these for filter icon customization */
 ::ng-deep .ag-header-cell {
 
   .ag-icon-menu::before,
@@ -14,7 +18,6 @@
   }
 }
 
-/* Make menu button always visible and apply custom icon */
 ::ng-deep .ag-header-cell-menu-button {
   opacity: 1 !important;
   display: inline-block !important;
@@ -25,35 +28,29 @@
     display: inline-block !important;
     width: 20px;
     height: 20px;
-    // State 1: DEFAULT - gray filter icon
     background-image: url('/assets/icons/filter-icon.svg');
     background-size: contain;
     background-repeat: no-repeat;
     background-position: center;
-    filter: none; // Use SVG's native gray color
-    transition: all 0.2s ease; // Smooth transition
+    filter: none;
+    transition: all 0.2s ease;
 
-    // Hide the default icon content
     &::before {
       display: none !important;
     }
   }
 }
 
-/* Hide the separate filter indicator icon that AG-Grid adds */
 ::ng-deep .ag-header-icon.ag-header-cell-filter-button {
   display: none !important;
 }
 
-/* State 2: ACTIVE - badge icon when filter is applied */
 ::ng-deep .ag-header-cell-filtered {
   .ag-header-cell-menu-button {
-    // Remove background since the active icon has its own background
     background-color: transparent !important;
     border-radius: 0 !important;
 
     .ag-icon-menu {
-      // Use the custom active state icon (with built-in colors)
       background-image: url('/assets/icons/filter-icon-active.svg') !important;
       filter: none !important;
     }

@@ -1,13 +1,21 @@
 <div class="app-container">
   <header>
     <h1>{{ title }}</h1>
-    <p>Demonstrating AG-Grid with custom text filter on the "Athlete" column</p>
+    <p>Chat management system with custom filters and pagination</p>
   </header>
   
-  <main>
+  <main class="grid-wrapper">
     <app-common-grid 
       [columnDefs]="columnDefs" 
-      [rowData]="rowData">
+      [rowData]="rowData"
+      [defaultColDef]="defaultColDef"
+      [paginationPageSize]="paginationPageSize"
+      (gridReady)="onGridReady($event)">
     </app-common-grid>
+    
+    <app-custom-pagination 
+      *ngIf="gridApi"
+      [gridApi]="gridApi">
+    </app-custom-pagination>
   </main>
 </div>

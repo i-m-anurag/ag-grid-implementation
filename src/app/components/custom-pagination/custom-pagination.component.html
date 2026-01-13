@@ -1,0 +1,35 @@
+<div class="custom-pagination">
+  <div class="pagination-left">
+    <span class="results-label">Result per page</span>
+    <select class="page-size-select" [value]="pageSize" (change)="onPageSizeChange($event)">
+      <option *ngFor="let size of pageSizeOptions" [value]="size">{{ size }}</option>
+    </select>
+  </div>
+
+  <div class="pagination-right">
+    <button 
+      class="pagination-button back-button" 
+      [disabled]="isFirstPage()"
+      (click)="goToPreviousPage()">
+      Back
+    </button>
+
+    <button 
+      *ngFor="let page of visiblePages"
+      class="pagination-button page-number"
+      [class.active]="page === currentPage"
+      (click)="goToPage(page)">
+      {{ page }}
+    </button>
+
+    <button 
+      class="pagination-button next-button" 
+      [disabled]="isLastPage()"
+      (click)="goToNextPage()">
+      Next
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M6 12L10 8L6 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </button>
+  </div>
+</div>
