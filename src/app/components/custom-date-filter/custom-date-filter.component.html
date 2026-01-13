@@ -1,0 +1,14 @@
+<div class="custom-date-filter">
+  <input 
+    type="date" 
+    class="date-input"
+    [value]="selectedDate"
+    (change)="onDateChange($event)"
+    placeholder="Select date">
+  <button 
+    *ngIf="selectedDate" 
+    class="clear-btn" 
+    (click)="clearFilter()">
+    Clear
+  </button>
+</div>

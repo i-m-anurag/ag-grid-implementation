@@ -3,6 +3,8 @@ import { ColDef, GridApi, GridReadyEvent } from 'ag-grid-community';
 import { CustomTextFilterComponent } from './components/custom-text-filter/custom-text-filter.component';
 import { ChatStatusBadgeComponent } from './components/chat-status-badge/chat-status-badge.component';
 import { ActionCellRendererComponent } from './components/action-cell-renderer/action-cell-renderer.component';
+import { CustomSelectFilterComponent } from './components/custom-select-filter/custom-select-filter.component';
+import { CustomDateFilterComponent } from './components/custom-date-filter/custom-date-filter.component';
 
 interface ChatData {
   chatId: string;
@@ -22,7 +24,7 @@ export class AppComponent implements AfterViewInit {
   title = 'AG-Grid Implementation - Chat Management';
   gridApi!: GridApi;
 
-  // Column definitions matching Figma design
+  // Column definitions with custom filters
   columnDefs: ColDef[] = [
     {
       field: 'chatId',
@@ -36,27 +38,37 @@ export class AppComponent implements AfterViewInit {
       field: 'chatTopic',
       headerName: 'Chat Topic',
       filter: CustomTextFilterComponent,
+      filterParams: {
+        placeholder: 'Filter topic...'
+      },
       minWidth: 200,
       sortable: true
     },
     {
       field: 'language',
       headerName: 'Language',
-      filter: 'agTextColumnFilter',
+      filter: CustomSelectFilterComponent,
+      filterParams: {
+        options: ['English', 'Arabic', 'Spanish', 'French', 'German', 'Italian'],
+        variant: 'default'
+      },
       minWidth: 120,
       sortable: true
     },
     {
       field: 'startDateTime',
       headerName: 'Start Date & Time',
-      filter: 'agTextColumnFilter',
+      filter: CustomDateFilterComponent,
       minWidth: 180,
       sortable: true
     },
     {
       field: 'duration',
       headerName: 'Duration',
-      filter: 'agTextColumnFilter',
+      filter: CustomTextFilterComponent,
+      filterParams: {
+        placeholder: 'Filter duration'
+      },
       maxWidth: 120,
       sortable: true
     },
@@ -64,7 +76,17 @@ export class AppComponent implements AfterViewInit {
       field: 'chatStatus',
       headerName: 'Chat Status',
       cellRenderer: ChatStatusBadgeComponent,
-      filter: 'agTextColumnFilter',
+      filter: CustomSelectFilterComponent,
+      filterParams: {
+        options: ['Resolved', 'Pending', 'In Progress', 'Closed'],
+        variant: 'badge',
+        badgeColors: {
+          'resolved': { bg: '#D1FAE5', text: '#059669' },
+          'pending': { bg: '#FEF3C7', text: '#D97706' },
+          'in progress': { bg: '#DBEAFE', text: '#2563EB' },
+          'closed': { bg: '#E5E7EB', text: '#6B7280' }
+        }
+      },
       minWidth: 140,
       sortable: true
     },
@@ -83,7 +105,7 @@ export class AppComponent implements AfterViewInit {
     }
   ];
 
-  // Sample row data matching Figma design
+  // Sample row data
   rowData: ChatData[] = [
     { chatId: 'C-2025091001', chatTopic: 'Resolved by bot', language: 'English', startDateTime: 'Sep 10, 2025 09:15', duration: '04:12', chatStatus: 'Resolved' },
     { chatId: 'C-2025091002', chatTopic: 'Resolved by Bot', language: 'English', startDateTime: 'Sep 10, 2025 09:15', duration: '04:12', chatStatus: 'Resolved' },
