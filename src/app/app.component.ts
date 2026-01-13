@@ -55,8 +55,15 @@ export class AppComponent implements AfterViewInit {
       this.httpClient.post(this.gridApiConfig.filterUrl!, filters)
         .subscribe((response: any) => {
           this.rowData = response.data;
+          // Hide loading after data received
+          // Grid component will auto-hide after 5s if not manually hidden
         });
       */
+    },
+    // Callback when loading state changes
+    onLoadingChange: (isLoading: boolean) => {
+      console.log('Loading state:', isLoading);
+      // You can update app-level loading state here if needed
     },
     // Transform API response to grid-compatible format
     onDataFetch: (response: any) => {

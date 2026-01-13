@@ -1,4 +1,15 @@
 <div class="grid-container">
+  <!-- Clear Filters Button -->
+  <div class="grid-header" *ngIf="hasActiveFilters()">
+    <button class="clear-filters-btn" (click)="clearAllFilters()" title="Clear all filters">
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M12 4L4 12M4 4l8 8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+      </svg>
+      Clear All Filters
+    </button>
+  </div>
+
+  <!-- AG Grid -->
   <ag-grid-angular
     style="width: 100%; height: 500px;"
     class="ag-theme-alpine"
@@ -10,4 +21,12 @@
     (firstDataRendered)="onFirstDataRendered($event)"
     (filterChanged)="onFilterChanged($event)">
   </ag-grid-angular>
+
+  <!-- Loading Overlay -->
+  <div class="loading-overlay" *ngIf="isLoading">
+    <div class="loading-spinner">
+      <div class="spinner"></div>
+      <p>Loading data...</p>
+    </div>
+  </div>
 </div>

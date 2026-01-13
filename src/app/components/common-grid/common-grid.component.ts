@@ -14,6 +14,7 @@ export interface GridApiConfig {
     debounceTime?: number;
     onFilterChange?: (filters: any) => void;
     onDataFetch?: (response: any) => any[];
+    onLoadingChange?: (isLoading: boolean) => void;
 }
 
 @Component({
@@ -34,6 +35,7 @@ export class CommonGridComponent implements OnDestroy {
 
     private filterSubject = new Subject<any>();
     private gridApi: any;
+    public isLoading: boolean = false;
 
     public gridOptions: GridOptions = {
         pagination: true,
@@ -78,8 +80,17 @@ export class CommonGridComponent implements OnDestroy {
 
     private handleFilterChange(filterModel: any): void {
         if (this.apiConfig.mode === 'server' && this.apiConfig.onFilterChange) {
+            this.setLoading(true);
             const mappedFilters = this.mapFiltersToApi(filterModel);
             this.apiConfig.onFilterChange(mappedFilters);
+
+            // Note: Parent should call setLoading(false) after API completes
+            // Or use setTimeout to auto-hide after reasonable time
+            setTimeout(() => {
+                if (this.isLoading) {
+                    this.setLoading(false);
+                }
+            }, 5000); // Auto-hide after 5 seconds as fallback
         }
     }
 
@@ -104,5 +115,33 @@ export class CommonGridComponent implements OnDestroy {
 
     public updateGridData(data: any[]): void {
         this.rowData = data;
+    }
+
+    public setLoading(loading: boolean): void {
+        this.isLoading = loading;
+        if (this.apiConfig.onLoadingChange) {
+            this.apiConfig.onLoadingChange(loading);
+        }
+    }
+
+    public clearAllFilters(): void {
+        if (this.gridApi) {
+            // Clear all filters
+            this.gridApi.setFilterModel(null);
+
+            // Reset to first page
+            this.gridApi.paginationGoToFirstPage();
+
+            // If server mode, notify parent to reload initial data
+            if (this.apiConfig.mode === 'server' && this.apiConfig.onFilterChange) {
+                this.apiConfig.onFilterChange({});
+            }
+        }
+    }
+
+    public hasActiveFilters(): boolean {
+        if (!this.gridApi) return false;
+        const filterModel = this.gridApi.getFilterModel();
+        return Object.keys(filterModel).length > 0;
     }
 }
