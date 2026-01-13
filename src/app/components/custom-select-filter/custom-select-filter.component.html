@@ -12,9 +12,7 @@
       <!-- Checkbox indicator on the right -->
       <div class="checkbox-wrapper">
         <div class="checkbox" [class.checked]="isSelected(option)">
-          <svg *ngIf="isSelected(option)" class="check-mark" width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M10 3L4.5 8.5L2 6" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-          </svg>
+          <img *ngIf="isSelected(option)" src="assets/icons/checkmark.svg" class="check-mark" alt="Checked">
         </div>
       </div>
     </div>

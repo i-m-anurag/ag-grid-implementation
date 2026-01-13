@@ -1,39 +1,33 @@
-/* Centralized AG-Grid Theme */
+/* AG-Grid Custom Theme - Centralized Styling for All Grid Components */
 
-/* Grid Container */
 .ag-theme-alpine {
-    --ag-border-color: #E5E7EB;
-    --ag-header-background-color: #F9FAFB;
-    --ag-header-foreground-color: #374151;
-    --ag-odd-row-background-color: #FFFFFF;
-    --ag-row-hover-color: #F9FAFB;
-    --ag-font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-    --ag-font-size: 14px;
-    --ag-row-height: 48px;
     --ag-header-height: 48px;
+    --ag-header-foreground-color: #374151;
+    --ag-header-background-color: #F9FAFB;
+    --ag-odd-row-background-color: #FFFFFF;
+    --ag-row-hover-color: #F3F4F6;
+    --ag-border-color: #E5E7EB;
+    --ag-row-border-color: #F3F4F6;
+
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+    font-size: 14px;
 
     /* Header Styles */
     .ag-header {
-        border-bottom: 1px solid var(--ag-border-color);
-        font-weight: 500;
+        border-bottom: 1px solid #E5E7EB;
+        background: linear-gradient(to bottom, #FAFBFC 0%, #F4F5F7 100%);
     }
 
     .ag-header-cell {
         padding: 0 16px;
+        font-weight: 600;
+        color: #374151;
+        font-size: 13px;
+        letter-spacing: 0.01em;
+    }
 
-        .ag-header-cell-label {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            width: 100%;
-        }
-
-        .ag-header-cell-text {
-            color: #6B7280;
-            font-size: 13px;
-            font-weight: 500;
-            text-transform: none;
-        }
+    .ag-header-cell-label {
+        justify-content: flex-start;
     }
 
     /* Cell Styles */
@@ -55,39 +49,19 @@
     /* Row Styles */
     .ag-row {
         border-bottom: 1px solid #F3F4F6;
-
-        &:last-child {
-            border-bottom: none;
-        }
     }
 
-    /* Remove default borders */
-    .ag-row:not(.ag-row-first) {
-        border-top: none;
+    .ag-row:hover {
+        background-color: #F9FAFB !important;
     }
 
-    /* Hide default pagination */
-    .ag-paging-panel {
-        display: none !important;
+    /* Remove row borders */
+    .ag-row-odd {
+        background-color: #FFFFFF;
     }
 
-    /* Filter Icon Styles */
-    .ag-header-cell-menu-button {
-        opacity: 1 !important;
-
-        .ag-icon-menu {
-            display: inline-block !important;
-        }
-    }
-
-    /* Checkbox Styles */
-    .ag-checkbox-input-wrapper {
-        width: 18px;
-        height: 18px;
-
-        &.ag-checked::after {
-            color: #3B82F6;
-        }
+    .ag-row-even {
+        background-color: #FAFBFC;
     }
 
     /* Scrollbar Styles */
@@ -129,24 +103,20 @@
         }
     }
 
-    /* Button Styles */
-    .ag-standard-button {
-        background-color: transparent;
-        border: 1px solid #D1D5DB;
-        border-radius: 6px;
-        padding: 6px 12px;
-        font-size: 13px;
-        color: #374151;
-
-        &:hover {
-            background-color: #F9FAFB;
-        }
+    /* Pagination Styles - Hide default */
+    .ag-paging-panel {
+        display: none !important;
     }
 
-    .ag-button-primary {
+    /* Button Styles */
+    .ag-standard-button {
         background-color: #3B82F6;
-        border-color: #3B82F6;
         color: white;
+        border: none;
+        border-radius: 6px;
+        padding: 8px 16px;
+        font-weight: 500;
+        transition: background-color 0.2s ease;
 
         &:hover {
             background-color: #2563EB;
@@ -154,16 +124,333 @@
     }
 }
 
-/* Grid Wrapper */
-.grid-wrapper {
-    width: 100%;
-    height: 100%;
-    display: flex;
-    flex-direction: column;
+/* ============================================ */
+/* CUSTOM TEXT FILTER COMPONENT STYLES */
+/* ============================================ */
+.custom-text-filter {
+    padding: 12px;
+    min-width: 200px;
+    background-color: #F3F4F6;
 }
 
-.grid-container {
-    flex: 1;
+.custom-text-filter .search-input-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.custom-text-filter .search-icon {
+    position: absolute;
+    left: 12px;
+    pointer-events: none;
+    z-index: 1;
+    width: 16px;
+    height: 16px;
+}
+
+.custom-text-filter .filter-input {
     width: 100%;
-    min-height: 400px;
+    padding: 8px 12px 8px 36px;
+    border: 1px solid #D1D5DB;
+    border-radius: 6px;
+    font-size: 14px;
+    color: #374151;
+    background-color: white;
+
+    &::placeholder {
+        color: #9CA3AF;
+    }
+
+    &:focus {
+        outline: none;
+        border-color: #3B82F6;
+    }
+}
+
+/* ============================================ */
+/* CUSTOM SELECT FILTER COMPONENT STYLES */
+/* ============================================ */
+.custom-select-filter {
+    padding: 8px 0;
+    min-width: 160px;
+    max-width: 200px;
+    background-color: #F3F4F6;
+}
+
+.custom-select-filter .filter-option {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 16px;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+
+    &:hover {
+        background-color: #E5E7EB;
+    }
+}
+
+.custom-select-filter .option-content {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.custom-select-filter .checkbox-wrapper {
+    flex-shrink: 0;
+}
+
+.custom-select-filter .checkbox {
+    width: 18px;
+    height: 18px;
+    border: 2px solid #D1D5DB;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+    background-color: white;
+
+    &.checked {
+        background-color: #3B82F6;
+        border-color: #3B82F6;
+    }
+}
+
+.custom-select-filter .check-mark {
+    width: 12px;
+    height: 12px;
+}
+
+.custom-select-filter .option-text {
+    font-size: 14px;
+    color: #374151;
+    flex: 1;
+}
+
+.custom-select-filter .status-badge {
+    display: inline-block;
+    padding: 5px 14px;
+    border-radius: 14px;
+    font-size: 13px;
+    font-weight: 500;
+    text-align: center;
+    white-space: nowrap;
+    flex: 1;
+}
+
+/* ============================================ */
+/* CUSTOM DATE FILTER COMPONENT STYLES */
+/* ============================================ */
+.custom-date-filter {
+    padding: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    min-width: 200px;
+    background-color: #F3F4F6;
+}
+
+.custom-date-filter .date-input {
+    width: 100%;
+    padding: 8px 12px;
+    border: 1px solid #D1D5DB;
+    border-radius: 6px;
+    font-size: 14px;
+    color: #374151;
+    background-color: white;
+
+    &:focus {
+        outline: none;
+        border-color: #3B82F6;
+    }
+}
+
+.custom-date-filter .clear-btn {
+    padding: 6px 12px;
+    background-color: white;
+    border: 1px solid #D1D5DB;
+    border-radius: 6px;
+    font-size: 13px;
+    color: #374151;
+    cursor: pointer;
+    transition: all 0.2s ease;
+
+    &:hover {
+        background-color: #F9FAFB;
+    }
+}
+
+/* ============================================ */
+/* CUSTOM PAGINATION COMPONENT STYLES */
+/* ============================================ */
+.custom-pagination {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 24px;
+    background-color: white;
+    border-top: 1px solid #E5E7EB;
+    font-size: 14px;
+}
+
+.custom-pagination .pagination-left {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: #6B7280;
+}
+
+.custom-pagination .results-label {
+    font-weight: 500;
+}
+
+.custom-pagination .page-size-select {
+    padding: 6px 32px 6px 12px;
+    border: 1px solid #D1D5DB;
+    border-radius: 6px;
+    background-color: white;
+    color: #374151;
+    font-size: 14px;
+    cursor: pointer;
+
+    &:focus {
+        outline: none;
+        border-color: #3B82F6;
+    }
+}
+
+.custom-pagination .pagination-right {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.custom-pagination .pagination-button {
+    padding: 8px 12px;
+    background-color: white;
+    border: 1px solid #D1D5DB;
+    border-radius: 6px;
+    color: #374151;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+
+    &:hover:not(:disabled) {
+        background-color: #F9FAFB;
+        border-color: #9CA3AF;
+    }
+
+    &:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+}
+
+.custom-pagination .page-numbers {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.custom-pagination .page-number {
+    min-width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 8px;
+    background-color: white;
+    border: 1px solid #E5E7EB;
+    border-radius: 6px;
+    color: #374151;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+
+    &:hover:not(.active) {
+        background-color: #F3F4F6;
+        border-color: #D1D5DB;
+    }
+
+    &.active {
+        background-color: #DBEAFE;
+        border-color: #3B82F6;
+        color: #1E40AF;
+    }
+}
+
+/* ============================================ */
+/* CHAT STATUS BADGE COMPONENT STYLES */
+/* ============================================ */
+.chat-status-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 5px 14px;
+    border-radius: 14px;
+    font-size: 13px;
+    font-weight: 500;
+    text-align: center;
+    white-space: nowrap;
+
+    &.resolved {
+        background-color: #D1FAE5;
+        color: #059669;
+    }
+
+    &.pending {
+        background-color: #FEF3C7;
+        color: #D97706;
+    }
+
+    &.in-progress {
+        background-color: #DBEAFE;
+        color: #2563EB;
+    }
+
+    &.closed {
+        background-color: #E5E7EB;
+        color: #6B7280;
+    }
+}
+
+/* ============================================ */
+/* ACTION CELL RENDERER COMPONENT STYLES */
+/* ============================================ */
+.action-cell {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+}
+
+.action-cell .action-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    background-color: transparent;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+    color: #6B7280;
+
+    &:hover {
+        background-color: #F3F4F6;
+        color: #374151;
+    }
+
+    &:active {
+        background-color: #E5E7EB;
+    }
+}
+
+.action-cell .action-icon {
+    width: 16px;
+    height: 16px;
 }
