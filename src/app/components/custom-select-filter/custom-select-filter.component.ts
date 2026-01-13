@@ -1,4 +1,6 @@
 import { Component } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { IFilterAngularComp } from 'ag-grid-angular';
 import { IDoesFilterPassParams, IFilterParams } from 'ag-grid-community';
 
@@ -7,12 +9,14 @@ export interface CustomSelectFilterParams extends IFilterParams {
     variant?: 'default' | 'badge';
     badgeColors?: { [key: string]: { bg: string; text: string } };
     filterMode?: 'client' | 'server';
-    selectionMode?: 'single' | 'multiple'; // Single or multiple selection
+    selectionMode?: 'single' | 'multiple';
     onFilterChange?: (selectedOptions: string[]) => void;
 }
 
 @Component({
     selector: 'app-custom-select-filter',
+    standalone: true,
+    imports: [CommonModule, FormsModule],
     templateUrl: './custom-select-filter.component.html',
     styleUrls: ['./custom-select-filter.component.scss']
 })
@@ -23,7 +27,7 @@ export class CustomSelectFilterComponent implements IFilterAngularComp {
     variant: 'default' | 'badge' = 'default';
     badgeColors: { [key: string]: { bg: string; text: string } } = {};
     filterMode: 'client' | 'server' = 'client';
-    selectionMode: 'single' | 'multiple' = 'multiple'; // Default to multiple
+    selectionMode: 'single' | 'multiple' = 'multiple';
 
     agInit(params: CustomSelectFilterParams): void {
         this.params = params;
@@ -33,17 +37,14 @@ export class CustomSelectFilterComponent implements IFilterAngularComp {
         this.filterMode = params.filterMode || 'client';
         this.selectionMode = params.selectionMode || 'multiple';
 
-        // For single select mode, don't show "All" option
         if (this.selectionMode === 'single') {
             // No initial selection for single mode
         } else {
-            // Multi-select mode - show "All" by default
             this.selectedOptions.add('All');
         }
     }
 
     get allOptions(): string[] {
-        // Only include "All" for multi-select mode
         if (this.selectionMode === 'multiple') {
             return ['All', ...this.options];
         }
@@ -96,11 +97,9 @@ export class CustomSelectFilterComponent implements IFilterAngularComp {
 
     toggleOption(option: string): void {
         if (this.selectionMode === 'single') {
-            // Single select mode - only one option can be selected
             this.selectedOptions.clear();
             this.selectedOptions.add(option);
         } else {
-            // Multi-select mode
             if (option === 'All') {
                 this.selectedOptions.clear();
                 this.selectedOptions.add('All');
@@ -122,24 +121,6 @@ export class CustomSelectFilterComponent implements IFilterAngularComp {
             if (this.params.onFilterChange) {
                 this.params.onFilterChange(selected);
             }
-
-            /* 
-            // Server-side filtering example (commented out)
-            // Get the API field name from column mapping
-            const apiFieldName = this.params.context?.apiConfig?.columnMapping?.[this.params.colDef.field!] 
-              || this.params.colDef.field;
-            
-            // Build filter payload with mapped field name
-            const filterPayload = {
-              [apiFieldName]: selected.filter(opt => opt !== 'All'),
-              filterType: 'select'
-            };
-            
-            // Call parent's filter handler
-            if (this.params.context?.apiConfig?.onFilterChange) {
-              this.params.context.apiConfig.onFilterChange(filterPayload);
-            }
-            */
         } else {
             this.params.filterChangedCallback();
         }

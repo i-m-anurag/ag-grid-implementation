@@ -1,18 +1,23 @@
-import { Component, Input, Output, EventEmitter, OnInit } from '@angular/core';
+import { Component, Input, Output, EventEmitter, OnInit, OnDestroy } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { GridApi } from 'ag-grid-community';
 
 export interface PaginationConfig {
-    mode?: 'client' | 'server'; // Client-side or server-side pagination
-    totalRecords?: number; // Total records (for server-side pagination)
-    onPageChange?: (page: number, pageSize: number) => void; // Server-side page change callback
+    mode?: 'client' | 'server';
+    totalRecords?: number;
+    paginationUrl?: string;
+    onPageChange?: (page: number, pageSize: number) => void;
 }
 
 @Component({
     selector: 'app-custom-pagination',
+    standalone: true,
+    imports: [CommonModule, FormsModule],
     templateUrl: './custom-pagination.component.html',
     styleUrls: ['./custom-pagination.component.scss']
 })
-export class CustomPaginationComponent implements OnInit {
+export class CustomPaginationComponent implements OnInit, OnDestroy {
     @Input() gridApi!: GridApi;
     @Input() config: PaginationConfig = { mode: 'client' };
     @Output() pageChange = new EventEmitter<number>();
@@ -33,7 +38,6 @@ export class CustomPaginationComponent implements OnInit {
         if (this.gridApi) {
             this.updatePaginationInfo();
 
-            // Listen to AG-Grid pagination events (for client-side mode)
             if (this.paginationMode === 'client') {
                 this.gridApi.addEventListener('paginationChanged', () => {
                     this.updatePaginationInfo();
@@ -42,14 +46,16 @@ export class CustomPaginationComponent implements OnInit {
         }
     }
 
+    ngOnDestroy(): void {
+        // Clean up event listeners if needed
+    }
+
     updatePaginationInfo(): void {
         if (this.paginationMode === 'client' && this.gridApi) {
-            // Client-side pagination - get info from AG-Grid
             this.currentPage = this.gridApi.paginationGetCurrentPage() + 1;
             this.totalPages = this.gridApi.paginationGetTotalPages();
             this.pageSize = this.gridApi.paginationGetPageSize();
         } else if (this.paginationMode === 'server') {
-            // Server-side pagination - calculate from total records
             this.totalPages = Math.ceil(this.totalRecords / this.pageSize);
         }
 
@@ -86,11 +92,9 @@ export class CustomPaginationComponent implements OnInit {
         this.pageSize = newSize;
 
         if (this.paginationMode === 'client' && this.gridApi) {
-            // Client-side - update AG-Grid
             this.gridApi.paginationSetPageSize(newSize);
         } else if (this.paginationMode === 'server') {
-            // Server-side - call API
-            this.currentPage = 1; // Reset to first page
+            this.currentPage = 1;
             this.updatePaginationInfo();
             this.fetchServerData(this.currentPage, newSize);
         }
@@ -103,10 +107,8 @@ export class CustomPaginationComponent implements OnInit {
             this.currentPage = page;
 
             if (this.paginationMode === 'client' && this.gridApi) {
-                // Client-side - update AG-Grid
                 this.gridApi.paginationGoToPage(page - 1);
             } else if (this.paginationMode === 'server') {
-                // Server-side - fetch data for this page
                 this.fetchServerData(page, this.pageSize);
             }
 
@@ -140,25 +142,6 @@ export class CustomPaginationComponent implements OnInit {
             this.config.onPageChange(page, pageSize);
         }
 
-        /* 
-        // Server-side pagination example (commented out)
-        // Use pagination URL from config
-        const paginationUrl = this.config.paginationUrl || '/api/data';
-        
-        // Build pagination parameters including active filters
-        const params = {
-            page: page.toString(),
-            pageSize: pageSize.toString(),
-            ...this.getActiveFilters()
-        };
-        
-        this.httpClient.get(paginationUrl, { params }).subscribe((response: any) => {
-            const data = response.data || response.items || response;
-            this.gridApi.setRowData(data);
-            this.totalRecords = response.totalRecords || response.total || data.length;
-            this.updatePaginationInfo();
-        });
-        */
         console.log('Server pagination would fetch:', { page, pageSize });
     }
 

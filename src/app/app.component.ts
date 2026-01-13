@@ -1,4 +1,5 @@
-import { Component, ViewChild, AfterViewInit } from '@angular/core';
+import { Component, AfterViewInit } from '@angular/core';
+import { CommonModule } from '@angular/common';
 import { ColDef, GridApi, GridReadyEvent } from 'ag-grid-community';
 import { CustomTextFilterComponent } from './components/custom-text-filter/custom-text-filter.component';
 import { ChatStatusBadgeComponent } from './components/chat-status-badge/chat-status-badge.component';
@@ -7,6 +8,8 @@ import { CustomSelectFilterComponent } from './components/custom-select-filter/c
 import { CustomDateFilterComponent } from './components/custom-date-filter/custom-date-filter.component';
 import { PaginationConfig } from './components/custom-pagination/custom-pagination.component';
 import { GridApiConfig } from './components/common-grid/common-grid.component';
+import { CommonGridComponent } from './components/common-grid/common-grid.component';
+import { CustomPaginationComponent } from './components/custom-pagination/custom-pagination.component';
 
 interface ChatData {
   chatId: string;
@@ -19,6 +22,8 @@ interface ChatData {
 
 @Component({
   selector: 'app-root',
+  standalone: true,
+  imports: [CommonModule, CommonGridComponent, CustomPaginationComponent],
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.scss']
 })

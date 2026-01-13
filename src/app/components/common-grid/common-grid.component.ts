@@ -1,4 +1,6 @@
 import { Component, Input, Output, EventEmitter, OnDestroy } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { AgGridModule } from 'ag-grid-angular';
 import { ColDef, GridOptions, GridReadyEvent } from 'ag-grid-community';
 import { Subject } from 'rxjs';
 import { debounceTime } from 'rxjs/operators';
@@ -9,13 +11,15 @@ export interface GridApiConfig {
     paginationUrl?: string;
     dataUrl?: string;
     columnMapping?: { [key: string]: string };
-    debounceTime?: number; // Debounce time for API calls in milliseconds (default: 300ms)
+    debounceTime?: number;
     onFilterChange?: (filters: any) => void;
     onDataFetch?: (response: any) => any[];
 }
 
 @Component({
     selector: 'app-common-grid',
+    standalone: true,
+    imports: [CommonModule, AgGridModule],
     templateUrl: './common-grid.component.html',
     styleUrls: ['./common-grid.component.scss']
 })
@@ -31,7 +35,6 @@ export class CommonGridComponent implements OnDestroy {
     private filterSubject = new Subject<any>();
     private gridApi: any;
 
-    // Grid options with default settings
     public gridOptions: GridOptions = {
         pagination: true,
         paginationPageSize: this.paginationPageSize,
@@ -40,7 +43,6 @@ export class CommonGridComponent implements OnDestroy {
     };
 
     constructor() {
-        // Setup debounced filter handling
         const debounceMs = this.apiConfig.debounceTime || 300;
         this.filterSubject.pipe(
             debounceTime(debounceMs)
@@ -58,7 +60,6 @@ export class CommonGridComponent implements OnDestroy {
         this.gridApi = params.api;
         this.gridReady.emit(params);
 
-        // If server mode, load initial data from API
         if (this.apiConfig.mode === 'server' && this.apiConfig.dataUrl) {
             this.loadServerData();
         }
@@ -72,13 +73,10 @@ export class CommonGridComponent implements OnDestroy {
     onFilterChanged(event: any) {
         const filterModel = event.api.getFilterModel();
         this.filterChanged.emit(filterModel);
-
-        // Push to subject for debouncing
         this.filterSubject.next(filterModel);
     }
 
     private handleFilterChange(filterModel: any): void {
-        // If using server-side filtering, notify parent
         if (this.apiConfig.mode === 'server' && this.apiConfig.onFilterChange) {
             const mappedFilters = this.mapFiltersToApi(filterModel);
             this.apiConfig.onFilterChange(mappedFilters);
@@ -100,44 +98,11 @@ export class CommonGridComponent implements OnDestroy {
     }
 
     private loadServerData(): void {
-        /* 
-        // Example server-side data loading (commented out)
-        // This demonstrates how to use the API configuration
-        
-        // Use the configured data URL
-        const dataUrl = this.apiConfig.dataUrl || '/api/data';
-        
-        // Make API call to fetch initial data
-        this.httpClient.get(dataUrl).subscribe((response: any) => {
-            // Transform response using the configured transformer
-            const data = this.apiConfig.onDataFetch 
-                ? this.apiConfig.onDataFetch(response) 
-                : response.data || response;
-            
-            // The API might return data with different field names
-            // The columnMapping helps map API fields to grid fields
-            // Example API response:
-            // {
-            //   data: [
-            //     { chat_id: 'C-001', topic: 'Issue', lang: 'en', ... }
-            //   ]
-            // }
-            
-            // Update grid with transformed data
-            this.rowData = data;
-            if (this.gridApi) {
-                this.gridApi.setRowData(data);
-            }
-        }, (error) => {
-            console.error('Error loading server data:', error);
-        });
-        */
         console.log('Server data load would happen here:', this.apiConfig.dataUrl);
         console.log('Column mapping:', this.apiConfig.columnMapping);
     }
 
     public updateGridData(data: any[]): void {
-        // Public method to update grid data from parent
         this.rowData = data;
     }
 }

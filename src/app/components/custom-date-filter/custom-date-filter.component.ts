@@ -1,4 +1,6 @@
 import { Component } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { IFilterAngularComp } from 'ag-grid-angular';
 import { IDoesFilterPassParams, IFilterParams } from 'ag-grid-community';
 
@@ -9,6 +11,8 @@ export interface CustomDateFilterParams extends IFilterParams {
 
 @Component({
     selector: 'app-custom-date-filter',
+    standalone: true,
+    imports: [CommonModule, FormsModule],
     templateUrl: './custom-date-filter.component.html',
     styleUrls: ['./custom-date-filter.component.scss']
 })
@@ -72,24 +76,6 @@ export class CustomDateFilterComponent implements IFilterAngularComp {
             if (this.params.onFilterChange) {
                 this.params.onFilterChange(this.selectedDate);
             }
-
-            /* 
-            // Server-side filtering example (commented out)
-            // Get the API field name from column mapping
-            const apiFieldName = this.params.context?.apiConfig?.columnMapping?.[this.params.colDef.field!] 
-              || this.params.colDef.field;
-            
-            // Build filter payload with mapped field name
-            const filterPayload = {
-              [apiFieldName]: this.selectedDate,
-              filterType: 'date'
-            };
-            
-            // Call parent's filter handler
-            if (this.params.context?.apiConfig?.onFilterChange) {
-              this.params.context.apiConfig.onFilterChange(filterPayload);
-            }
-            */
         } else {
             this.params.filterChangedCallback();
         }

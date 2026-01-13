@@ -1,4 +1,6 @@
 import { Component } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { IFilterAngularComp } from 'ag-grid-angular';
 import { IDoesFilterPassParams, IFilterParams } from 'ag-grid-community';
 
@@ -10,6 +12,8 @@ export interface CustomTextFilterParams extends IFilterParams {
 
 @Component({
     selector: 'app-custom-text-filter',
+    standalone: true,
+    imports: [CommonModule, FormsModule],
     templateUrl: './custom-text-filter.component.html',
     styleUrls: ['./custom-text-filter.component.scss']
 })
@@ -65,8 +69,6 @@ export class CustomTextFilterComponent implements IFilterAngularComp {
     }
 
     onSearchChange(): void {
-        // Debouncing is now handled by common-grid component
-        // Just trigger the filter changed callback
         if (this.filterMode === 'server') {
             if (this.params.onFilterChange) {
                 this.params.onFilterChange(this.searchText);

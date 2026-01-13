@@ -1,9 +1,12 @@
 import { Component } from '@angular/core';
+import { CommonModule } from '@angular/common';
 import { ICellRendererAngularComp } from 'ag-grid-angular';
 import { ICellRendererParams } from 'ag-grid-community';
 
 @Component({
     selector: 'app-chat-status-badge',
+    standalone: true,
+    imports: [CommonModule],
     templateUrl: './chat-status-badge.component.html',
     styleUrls: ['./chat-status-badge.component.scss']
 })
@@ -23,13 +26,6 @@ export class ChatStatusBadgeComponent implements ICellRendererAngularComp {
     }
 
     private getStatusClass(status: string): string {
-        // Map status to CSS classes
-        const statusMap: { [key: string]: string } = {
-            'resolved': 'status-resolved',
-            'pending': 'status-pending',
-            'in progress': 'status-in-progress',
-            'closed': 'status-closed'
-        };
-        return statusMap[status?.toLowerCase()] || 'status-default';
+        return status.toLowerCase().replace(/\s+/g, '-');
     }
 }
