@@ -1,4 +1,4 @@
-import { Component, Input, Output, EventEmitter, OnInit, OnDestroy } from '@angular/core';
+import { Component, Input, Output, EventEmitter, OnInit, OnDestroy, OnChanges, SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { GridApi } from 'ag-grid-community';
@@ -16,7 +16,7 @@ export interface PaginationConfig {
     templateUrl: './custom-pagination.component.html',
     styleUrls: ['./custom-pagination.component.scss']
 })
-export class CustomPaginationComponent implements OnInit, OnDestroy {
+export class CustomPaginationComponent implements OnInit, OnDestroy, OnChanges {
     @Input() gridApi!: GridApi;
     @Input() config: PaginationConfig = { mode: 'client' };
     @Output() pageChange = new EventEmitter<number>();
@@ -31,22 +31,34 @@ export class CustomPaginationComponent implements OnInit, OnDestroy {
     totalRecords: number = 0;
 
     ngOnInit(): void {
-        this.paginationMode = this.config.mode || 'client';
-        this.totalRecords = this.config.totalRecords || 0;
+        this.updateConfig();
 
-        if (this.gridApi) {
+        if (this.gridApi && this.paginationMode === 'client') {
+            this.gridApi.addEventListener('paginationChanged', () => {
+                this.updatePaginationInfo();
+            });
             this.updatePaginationInfo();
+        }
+    }
 
-            if (this.paginationMode === 'client') {
-                this.gridApi.addEventListener('paginationChanged', () => {
-                    this.updatePaginationInfo();
-                });
-            }
+    ngOnChanges(changes: SimpleChanges): void {
+        if (changes['config'] && !changes['config'].firstChange) {
+            this.updateConfig();
+            this.updatePaginationInfo();
         }
     }
 
     ngOnDestroy(): void {
         // Clean up event listeners if needed
+    }
+
+    private updateConfig(): void {
+        this.paginationMode = this.config.mode || 'client';
+        // Only update totalRecords if provided, otherwise default to 0 for server mode
+        // or let client mode handle it via gridApi
+        if (this.config.totalRecords !== undefined) {
+            this.totalRecords = this.config.totalRecords;
+        }
     }
 
     updatePaginationInfo(): void {
@@ -56,6 +68,8 @@ export class CustomPaginationComponent implements OnInit, OnDestroy {
             this.pageSize = this.gridApi.paginationGetPageSize();
         } else if (this.paginationMode === 'server') {
             this.totalPages = Math.ceil(this.totalRecords / this.pageSize);
+            // Ensure totalPages is at least 1
+            if (this.totalPages < 1) this.totalPages = 1;
         }
 
         this.visiblePages = this.getVisiblePages();

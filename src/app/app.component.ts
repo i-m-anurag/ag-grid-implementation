@@ -72,13 +72,35 @@ export class AppComponent implements AfterViewInit {
 
   // Pagination configuration
   paginationConfig: PaginationConfig = {
-    mode: 'client', // 'client' or 'server'
-    totalRecords: 0, // Set this when using server mode
+    mode: 'server', // Switch to server mode for testing
+    totalRecords: 0,
     onPageChange: (page: number, pageSize: number) => {
       console.log(`Page changed to ${page}, page size: ${pageSize}`);
-      // Add your server-side pagination API call here
+      // Simulate fetching new page data
+      this.fetchMockData(page, pageSize);
     }
   };
+
+  constructor() {
+    // Simulate initial API call delay
+    console.log('Simulating initial server data fetch...');
+    setTimeout(() => {
+      console.log('Async data received! Updating total records...');
+      // Create a NEW object reference to trigger ngOnChanges
+      this.paginationConfig = {
+        ...this.paginationConfig,
+        totalRecords: 156 // Example: 156 total records
+      };
+      // Also load the first page of data
+      this.fetchMockData(1, 10);
+    }, 2000); // 2 second delay
+  }
+
+  fetchMockData(page: number, pageSize: number) {
+    // Mock data fetching logic - in real app this would call API
+    console.log(`Fetching data for page ${page}`);
+    // Here you would normally update this.rowData with new data
+  }
 
   // Column definitions with custom filters
   columnDefs: ColDef[] = [
