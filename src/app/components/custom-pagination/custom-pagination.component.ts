@@ -6,7 +6,6 @@ import { GridApi } from 'ag-grid-community';
 export interface PaginationConfig {
     mode?: 'client' | 'server';
     totalRecords?: number;
-    paginationUrl?: string;
     onPageChange?: (page: number, pageSize: number) => void;
 }
 

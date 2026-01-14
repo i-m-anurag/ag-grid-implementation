@@ -34,9 +34,6 @@ export class AppComponent implements AfterViewInit {
   // Grid API Configuration
   gridApiConfig: GridApiConfig = {
     mode: 'client', // Switch to 'server' for API-based filtering
-    filterUrl: '/api/chats/filter', // API endpoint for filtering
-    paginationUrl: '/api/chats/paginate', // API endpoint for pagination
-    dataUrl: '/api/chats', // API endpoint for initial data
     debounceTime: 500, // Wait 500ms after last filter change before calling API
     // Map grid column names to API field names
     columnMapping: {
@@ -50,9 +47,10 @@ export class AppComponent implements AfterViewInit {
     // Callback when filters change (for server-side mode)
     onFilterChange: (filters: any) => {
       console.log('Filters changed (debounced):', filters);
+      // Filters are already mapped using columnMapping by common-grid
       // Add your API call here to fetch filtered data
       /* 
-      this.httpClient.post(this.gridApiConfig.filterUrl!, filters)
+      this.httpClient.post('/api/chats/filter', filters)
         .subscribe((response: any) => {
           this.rowData = response.data;
           // Hide loading after data received

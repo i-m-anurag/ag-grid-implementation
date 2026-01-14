@@ -7,9 +7,6 @@ import { debounceTime } from 'rxjs/operators';
 
 export interface GridApiConfig {
     mode?: 'client' | 'server';
-    filterUrl?: string;
-    paginationUrl?: string;
-    dataUrl?: string;
     columnMapping?: { [key: string]: string };
     debounceTime?: number;
     onFilterChange?: (filters: any) => void;
@@ -61,10 +58,6 @@ export class CommonGridComponent implements OnDestroy {
         console.log('Grid is ready');
         this.gridApi = params.api;
         this.gridReady.emit(params);
-
-        if (this.apiConfig.mode === 'server' && this.apiConfig.dataUrl) {
-            this.loadServerData();
-        }
     }
 
     onFirstDataRendered(params: any) {
@@ -108,10 +101,7 @@ export class CommonGridComponent implements OnDestroy {
         return mappedFilters;
     }
 
-    private loadServerData(): void {
-        console.log('Server data load would happen here:', this.apiConfig.dataUrl);
-        console.log('Column mapping:', this.apiConfig.columnMapping);
-    }
+
 
     public updateGridData(data: any[]): void {
         this.rowData = data;
