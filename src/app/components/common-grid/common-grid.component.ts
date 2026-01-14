@@ -4,6 +4,11 @@ import { AgGridModule } from 'ag-grid-angular';
 import { ColDef, GridOptions, GridReadyEvent } from 'ag-grid-community';
 import { Subject } from 'rxjs';
 import { debounceTime } from 'rxjs/operators';
+import { CustomTextFilterComponent } from '../custom-text-filter/custom-text-filter.component';
+import { CustomSelectFilterComponent } from '../custom-select-filter/custom-select-filter.component';
+import { CustomDateFilterComponent } from '../custom-date-filter/custom-date-filter.component';
+import { ChatStatusBadgeComponent } from '../chat-status-badge/chat-status-badge.component';
+import { ActionCellRendererComponent } from '../action-cell-renderer/action-cell-renderer.component';
 
 export interface GridApiConfig {
     mode?: 'client' | 'server';
@@ -17,7 +22,15 @@ export interface GridApiConfig {
 @Component({
     selector: 'app-common-grid',
     standalone: true,
-    imports: [CommonModule, AgGridModule],
+    imports: [
+        CommonModule,
+        AgGridModule,
+        CustomTextFilterComponent,
+        CustomSelectFilterComponent,
+        CustomDateFilterComponent,
+        ChatStatusBadgeComponent,
+        ActionCellRendererComponent
+    ],
     templateUrl: './common-grid.component.html',
     styleUrls: ['./common-grid.component.scss']
 })
@@ -38,7 +51,8 @@ export class CommonGridComponent implements OnDestroy {
         pagination: true,
         paginationPageSize: this.paginationPageSize,
         suppressPaginationPanel: true,
-        domLayout: 'normal'
+        domLayout: 'normal',
+        popupParent: document.body
     };
 
     constructor() {

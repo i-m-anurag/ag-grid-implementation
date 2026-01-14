@@ -339,42 +339,238 @@
 /* CUSTOM DATE FILTER COMPONENT STYLES */
 /* ============================================ */
 .custom-date-filter {
-    padding: 12px;
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-    min-width: 200px;
-    background-color: #F3F4F6;
-}
-
-.custom-date-filter .date-input {
-    width: 100%;
-    padding: 8px 12px;
-    border: 1px solid #D1D5DB;
-    border-radius: 6px;
-    font-size: 14px;
-    color: #374151;
+    padding: 0;
+    min-width: 320px;
     background-color: white;
 
-    &:focus {
-        outline: none;
-        border-color: #3B82F6;
+    .filter-content {
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+        padding: 16px;
+        position: relative;
+    }
+
+    // Custom Calendar Styles
+    .calendar-wrapper {
+        padding: 16px;
+
+        .calendar-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+
+            .nav-btn {
+                background: none;
+                border: none;
+                font-size: 20px;
+                cursor: pointer;
+                padding: 4px 8px;
+                color: #333;
+
+                &:hover {
+                    background: #f0f0f0;
+                    border-radius: 4px;
+                }
+            }
+
+            .month-year {
+                font-size: 14px;
+                font-weight: 600;
+                color: #333;
+            }
+        }
+
+        .calendar-weekdays {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 4px;
+            margin-bottom: 8px;
+
+            .weekday {
+                text-align: center;
+                font-size: 12px;
+                font-weight: 600;
+                color: #666;
+                padding: 8px 0;
+            }
+        }
+
+        .calendar-days {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 4px;
+
+            .day-cell {
+                aspect-ratio: 1;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 13px;
+                cursor: pointer;
+                border-radius: 4px;
+                transition: all 0.2s;
+
+                &.other-month {
+                    color: #ccc;
+                }
+
+                &:hover {
+                    background: #f0f0f0;
+                }
+
+                &.today {
+                    border: 1px solid #0066FF;
+                }
+
+                &.selected {
+                    background: #0066FF;
+                    color: white;
+
+                    &:hover {
+                        background: #0052CC;
+                    }
+                }
+            }
+        }
+    }
+
+    // Time Selection
+    .time-selection {
+        padding: 16px;
+        border-top: 1px solid #E5E5E5;
+
+        .section-label {
+            display: block;
+            font-size: 12px;
+            font-weight: 600;
+            color: #666;
+            margin-bottom: 8px;
+        }
+
+        .time-inputs {
+            display: flex;
+            gap: 12px;
+
+            .time-select {
+                flex: 1;
+                padding: 8px 12px;
+                border: 1px solid #D1D5DB;
+                border-radius: 6px;
+                background: white;
+                font-size: 14px;
+                color: #333;
+                cursor: pointer;
+
+                &:focus {
+                    outline: none;
+                    border-color: #0066FF;
+                    box-shadow: 0 0 0 3px rgba(0, 102, 255, 0.1);
+                }
+            }
+        }
+    }
+
+    // Action Buttons
+    .action-buttons {
+        display: flex;
+        justify-content: flex-end;
+        gap: 12px;
+        padding: 16px;
+        border-top: 1px solid #E5E5E5;
+
+        button {
+            padding: 8px 16px;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: none;
+
+            &.cancel-btn {
+                background: transparent;
+                color: #666;
+
+                &:hover {
+                    background: #f0f0f0;
+                }
+            }
+
+            &.ok-btn {
+                background: #0066FF;
+                color: white;
+
+                &:hover {
+                    background: #0052CC;
+                }
+            }
+        }
     }
 }
 
-.custom-date-filter .clear-btn {
-    padding: 6px 12px;
-    background-color: white;
-    border: 1px solid #D1D5DB;
-    border-radius: 6px;
-    font-size: 13px;
-    color: #374151;
-    cursor: pointer;
-    transition: all 0.2s ease;
+
+/* NgBootstrap Datepicker Customization */
+::ng-deep .custom-date-filter ngb-datepicker {
+    border: none !important;
+    box-shadow: none !important;
+}
+
+::ng-deep .custom-date-filter .ngb-dp-header {
+    background-color: transparent !important;
+    border: none !important;
+    padding: 0 0 12px 0 !important;
+}
+
+::ng-deep .custom-date-filter .ngb-dp-month-name {
+    font-size: 18px !important;
+    font-weight: 600 !important;
+    color: #1F2937 !important;
+    background-color: transparent !important;
+}
+
+::ng-deep .custom-date-filter .ngb-dp-arrow button {
+    color: #6B7280 !important;
 
     &:hover {
-        background-color: #F9FAFB;
+        background-color: #F3F4F6 !important;
     }
+}
+
+::ng-deep .custom-date-filter .ngb-dp-weekday {
+    color: #6B7280 !important;
+    font-weight: 500 !important;
+    font-size: 12px !important;
+}
+
+::ng-deep .custom-date-filter .ngb-dp-day {
+    border-radius: 50% !important;
+}
+
+::ng-deep .custom-date-filter .ngb-dp-day .btn-light {
+    color: #374151 !important;
+    background-color: transparent !important;
+    border: none !important;
+    border-radius: 50% !important;
+
+    &:hover {
+        background-color: #F3F4F6 !important;
+    }
+}
+
+::ng-deep .custom-date-filter .ngb-dp-day.selected .btn-light {
+    background-color: #3B82F6 !important;
+    color: white !important;
+}
+
+::ng-deep .custom-date-filter .ngb-dp-day.disabled,
+::ng-deep .custom-date-filter .ngb-dp-day.hidden {
+    color: #D1D5DB !important;
+}
+
+::ng-deep .custom-date-filter .ngb-dp-week {
+    border-radius: 0 !important;
 }
 
 /* ============================================ */
