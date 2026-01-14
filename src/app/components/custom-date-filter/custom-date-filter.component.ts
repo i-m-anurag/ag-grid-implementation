@@ -25,11 +25,36 @@ interface CalendarDay {
 })
 export class CustomDateFilterComponent implements IFilterAngularComp {
     params!: CustomDateFilterParams;
+
+    // Applied State (The Source of Truth)
     selectedDate: Date | null = null;
-    currentMonth: Date = new Date();
     timeFrom: string = '';
     timeTo: string = '';
+
+    // UI State (Pending Changes)
+    tempSelectedDate: Date | null = null;
+    tempTimeFrom: string = '';
+    tempTimeTo: string = '';
+
+    currentMonth: Date = new Date();
     filterMode: 'client' | 'server' = 'client';
+
+    availableMonths = [
+        { value: 0, label: 'January' },
+        { value: 1, label: 'February' },
+        { value: 2, label: 'March' },
+        { value: 3, label: 'April' },
+        { value: 4, label: 'May' },
+        { value: 5, label: 'June' },
+        { value: 6, label: 'July' },
+        { value: 7, label: 'August' },
+        { value: 8, label: 'September' },
+        { value: 9, label: 'October' },
+        { value: 10, label: 'November' },
+        { value: 11, label: 'December' }
+    ];
+
+    availableYears: number[] = [];
 
     weekDays = ['Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa', 'Su'];
     calendarDays: CalendarDay[] = [];
@@ -45,7 +70,46 @@ export class CustomDateFilterComponent implements IFilterAngularComp {
     agInit(params: CustomDateFilterParams): void {
         this.params = params;
         this.filterMode = params.filterMode || 'client';
+        this.generateYears();
         this.generateCalendar();
+    }
+
+    // Called every time the popup opens
+    afterGuiAttached(params?: any): void {
+        // Sync UI state with Applied state
+        this.tempSelectedDate = this.selectedDate ? new Date(this.selectedDate) : null;
+        this.tempTimeFrom = this.timeFrom;
+        this.tempTimeTo = this.timeTo;
+
+        // Reset calendar view to currently selected date or today
+        this.currentMonth = this.tempSelectedDate ? new Date(this.tempSelectedDate) : new Date();
+        this.generateCalendar();
+    }
+
+    generateYears(): void {
+        const currentYear = new Date().getFullYear();
+        const startYear = currentYear - 10;
+        const endYear = currentYear + 10;
+        this.availableYears = [];
+        for (let year = startYear; year <= endYear; year++) {
+            this.availableYears.push(year);
+        }
+    }
+
+    onMonthChange(event: any): void {
+        const newMonth = parseInt(event.target.value);
+        this.currentMonth = new Date(this.currentMonth.getFullYear(), newMonth, 1);
+        this.generateCalendar();
+    }
+
+    onYearChange(event: any): void {
+        const newYear = parseInt(event.target.value);
+        this.currentMonth = new Date(newYear, this.currentMonth.getMonth(), 1);
+        this.generateCalendar();
+    }
+
+    isPopup(): boolean {
+        return true;
     }
 
     isFilterActive(): boolean {
@@ -95,12 +159,21 @@ export class CustomDateFilterComponent implements IFilterAngularComp {
             this.selectedDate = new Date(model.date);
             this.timeFrom = model.timeFrom || '';
             this.timeTo = model.timeTo || '';
+
+            // Also sync temp state immediately just in case
+            this.tempSelectedDate = new Date(this.selectedDate);
+            this.tempTimeFrom = this.timeFrom;
+            this.tempTimeTo = this.timeTo;
             this.currentMonth = new Date(this.selectedDate);
             this.generateCalendar();
         } else {
             this.selectedDate = null;
             this.timeFrom = '';
             this.timeTo = '';
+
+            this.tempSelectedDate = null;
+            this.tempTimeFrom = '';
+            this.tempTimeTo = '';
         }
     }
 
@@ -169,7 +242,9 @@ export class CustomDateFilterComponent implements IFilterAngularComp {
     }
 
     selectDay(day: CalendarDay): void {
-        this.selectedDate = new Date(day.year, day.month, day.day);
+        // Update TEMP state only
+        this.tempSelectedDate = new Date(day.year, day.month, day.day);
+
         if (day.month !== this.currentMonth.getMonth()) {
             this.currentMonth = new Date(day.year, day.month, 1);
             this.generateCalendar();
@@ -177,10 +252,11 @@ export class CustomDateFilterComponent implements IFilterAngularComp {
     }
 
     isSelectedDay(day: CalendarDay): boolean {
-        if (!this.selectedDate) return false;
-        return day.day === this.selectedDate.getDate() &&
-            day.month === this.selectedDate.getMonth() &&
-            day.year === this.selectedDate.getFullYear();
+        // Check against TEMP state
+        if (!this.tempSelectedDate) return false;
+        return day.day === this.tempSelectedDate.getDate() &&
+            day.month === this.tempSelectedDate.getMonth() &&
+            day.year === this.tempSelectedDate.getFullYear();
     }
 
     isToday(day: CalendarDay): boolean {
@@ -191,6 +267,11 @@ export class CustomDateFilterComponent implements IFilterAngularComp {
     }
 
     onApply(): void {
+        // Commit changes: Temp -> Applied
+        this.selectedDate = this.tempSelectedDate;
+        this.timeFrom = this.tempTimeFrom;
+        this.timeTo = this.tempTimeTo;
+
         if (this.selectedDate) {
             if (this.filterMode === 'server') {
                 if (this.params.onFilterChange) {
@@ -204,12 +285,20 @@ export class CustomDateFilterComponent implements IFilterAngularComp {
                 this.params.filterChangedCallback();
             }
         }
+        // Ideally close popup here
+        this.params.api.hidePopupMenu();
     }
 
     onCancel(): void {
+        // Clear filter
         this.selectedDate = null;
         this.timeFrom = '';
         this.timeTo = '';
+        // Reset temp state
+        this.tempSelectedDate = null;
+        this.tempTimeFrom = '';
+        this.tempTimeTo = '';
+
         this.currentMonth = new Date();
         this.generateCalendar();
 
@@ -220,6 +309,7 @@ export class CustomDateFilterComponent implements IFilterAngularComp {
         } else {
             this.params.filterChangedCallback();
         }
+        this.params.api.hidePopupMenu();
     }
 
     private formatDate(date: Date): string {

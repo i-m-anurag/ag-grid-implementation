@@ -5,7 +5,14 @@
       <!-- Calendar Header -->
       <div class="calendar-header">
         <button class="nav-btn" (click)="previousMonth()" type="button">‹</button>
-        <span class="month-year">{{ getMonthYearDisplay() }}</span>
+        <div class="header-dropdowns">
+          <select [ngModel]="currentMonth.getMonth()" (change)="onMonthChange($event)" class="month-select">
+            <option *ngFor="let month of availableMonths" [value]="month.value">{{ month.label }}</option>
+          </select>
+          <select [ngModel]="currentMonth.getFullYear()" (change)="onYearChange($event)" class="year-select">
+            <option *ngFor="let year of availableYears" [value]="year">{{ year }}</option>
+          </select>
+        </div>
         <button class="nav-btn" (click)="nextMonth()" type="button">›</button>
       </div>
 
@@ -31,11 +38,11 @@
     <div class="time-selection">
       <label class="section-label">Select time</label>
       <div class="time-inputs">
-        <select class="time-select" [(ngModel)]="timeFrom">
+        <select class="time-select" [(ngModel)]="tempTimeFrom">
           <option value="">From</option>
           <option *ngFor="let time of timeOptions" [value]="time">{{ time }}</option>
         </select>
-        <select class="time-select" [(ngModel)]="timeTo">
+        <select class="time-select" [(ngModel)]="tempTimeTo">
           <option value="">To</option>
           <option *ngFor="let time of timeOptions" [value]="time">{{ time }}</option>
         </select>
