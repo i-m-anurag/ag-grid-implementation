@@ -31,9 +31,8 @@ export class AppComponent implements AfterViewInit {
   title = 'AG-Grid Implementation - Chat Management';
   gridApi!: GridApi;
 
-  // Grid API Configuration
   gridApiConfig: GridApiConfig = {
-    mode: 'client', // Switch to 'server' for API-based filtering
+    mode: 'server', // Server-side filtering enabled
     debounceTime: 500, // Wait 500ms after last filter change before calling API
     // Map grid column names to API field names
     columnMapping: {
@@ -47,8 +46,37 @@ export class AppComponent implements AfterViewInit {
     // Callback when filters change (for server-side mode)
     onFilterChange: (filters: any) => {
       console.log('Filters changed (debounced):', filters);
+
       // Filters are already mapped using columnMapping by common-grid
-      // Add your API call here to fetch filtered data
+      // Structure example:
+      // {
+      //   chat_id: { filterType: 'text', filter: 'C-2025' },
+      //   lang: { filterType: 'select', options: ['English', 'Spanish'] },
+      //   start_date_time: { filterType: 'date', date: '2025-09-10', timeFrom: '09:00', timeTo: '17:00' }
+      // }
+
+      // Process each filter by type
+      Object.keys(filters).forEach(fieldName => {
+        const filterModel = filters[fieldName];
+
+        switch (filterModel.filterType) {
+          case 'text':
+            console.log(`Text filter on ${fieldName}: "${filterModel.filter}"`);
+            break;
+          case 'select':
+            console.log(`Select filter on ${fieldName}:`, filterModel.options);
+            break;
+          case 'date':
+            console.log(`Date filter on ${fieldName}:`, {
+              date: filterModel.date,
+              timeFrom: filterModel.timeFrom,
+              timeTo: filterModel.timeTo
+            });
+            break;
+        }
+      });
+
+      // Make API call with all active filters
       /* 
       this.httpClient.post('/api/chats/filter', filters)
         .subscribe((response: any) => {
@@ -110,7 +138,8 @@ export class AppComponent implements AfterViewInit {
       filter: CustomTextFilterComponent,
       filterParams: {
         placeholder: 'Filter Chat ID...',
-        filterMode: 'client'
+        filterMode: 'server',
+        filterType: 'text'
       },
       minWidth: 150,
       sortable: true,
@@ -121,7 +150,9 @@ export class AppComponent implements AfterViewInit {
       headerName: 'Chat Topic',
       filter: CustomTextFilterComponent,
       filterParams: {
-        placeholder: 'Filter topic...'
+        placeholder: 'Filter topic...',
+        filterMode: 'server',
+        filterType: 'text'
       },
       minWidth: 200,
       sortable: true
@@ -133,7 +164,9 @@ export class AppComponent implements AfterViewInit {
       filterParams: {
         options: ['English', 'Arabic', 'Spanish', 'French', 'German', 'Italian'],
         variant: 'default',
-        selectionMode: 'single' // Single selection for language
+        selectionMode: 'single',
+        filterMode: 'server',
+        filterType: 'select'
       },
       minWidth: 120,
       sortable: true
@@ -142,6 +175,10 @@ export class AppComponent implements AfterViewInit {
       field: 'startDateTime',
       headerName: 'Start Date & Time',
       filter: CustomDateFilterComponent,
+      filterParams: {
+        filterMode: 'server',
+        filterType: 'date'
+      },
       minWidth: 180,
       sortable: true
     },
@@ -150,7 +187,9 @@ export class AppComponent implements AfterViewInit {
       headerName: 'Duration',
       filter: CustomTextFilterComponent,
       filterParams: {
-        placeholder: 'Filter duration'
+        placeholder: 'Filter duration',
+        filterMode: 'server',
+        filterType: 'text'
       },
       maxWidth: 120,
       sortable: true
@@ -163,7 +202,9 @@ export class AppComponent implements AfterViewInit {
       filterParams: {
         options: ['Resolved', 'Pending', 'In Progress', 'Closed'],
         variant: 'badge',
-        selectionMode: 'multiple', // Multiple selection for status
+        selectionMode: 'multiple',
+        filterMode: 'server',
+        filterType: 'select',
         badgeColors: {
           'resolved': { bg: '#D1FAE5', text: '#059669' },
           'pending': { bg: '#FEF3C7', text: '#D97706' },

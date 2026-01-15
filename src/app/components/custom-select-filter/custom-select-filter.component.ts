@@ -10,6 +10,7 @@ export interface CustomSelectFilterParams extends IFilterParams {
     badgeColors?: { [key: string]: { bg: string; text: string } };
     filterMode?: 'client' | 'server';
     selectionMode?: 'single' | 'multiple';
+    filterType?: string;
     onFilterChange?: (selectedOptions: string[]) => void;
 }
 
@@ -28,6 +29,7 @@ export class CustomSelectFilterComponent implements IFilterAngularComp {
     badgeColors: { [key: string]: { bg: string; text: string } } = {};
     filterMode: 'client' | 'server' = 'client';
     selectionMode: 'single' | 'multiple' = 'multiple';
+    filterType: string = 'select';
 
     agInit(params: CustomSelectFilterParams): void {
         this.params = params;
@@ -36,6 +38,7 @@ export class CustomSelectFilterComponent implements IFilterAngularComp {
         this.badgeColors = params.badgeColors || {};
         this.filterMode = params.filterMode || 'client';
         this.selectionMode = params.selectionMode || 'multiple';
+        this.filterType = params.filterType || 'select';
 
         if (this.selectionMode === 'single') {
             // No initial selection for single mode
@@ -81,8 +84,8 @@ export class CustomSelectFilterComponent implements IFilterAngularComp {
 
     getModel() {
         return this.isFilterActive() ? {
-            options: Array.from(this.selectedOptions),
-            mode: this.filterMode
+            filterType: this.filterType,
+            options: Array.from(this.selectedOptions)
         } : null;
     }
 
@@ -116,14 +119,7 @@ export class CustomSelectFilterComponent implements IFilterAngularComp {
             }
         }
 
-        if (this.filterMode === 'server') {
-            const selected = Array.from(this.selectedOptions);
-            if (this.params.onFilterChange) {
-                this.params.onFilterChange(selected);
-            }
-        } else {
-            this.params.filterChangedCallback();
-        }
+        this.params.filterChangedCallback();
     }
 
     isSelected(option: string): boolean {

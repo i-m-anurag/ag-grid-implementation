@@ -6,6 +6,7 @@ import { IDoesFilterPassParams, IFilterParams } from 'ag-grid-community';
 
 export interface CustomDateFilterParams extends IFilterParams {
     filterMode?: 'client' | 'server';
+    filterType?: string;
     onFilterChange?: (date: string, timeFrom?: string, timeTo?: string) => void;
 }
 
@@ -38,6 +39,7 @@ export class CustomDateFilterComponent implements IFilterAngularComp {
 
     currentMonth: Date = new Date();
     filterMode: 'client' | 'server' = 'client';
+    filterType: string = 'date';
 
     availableMonths = [
         { value: 0, label: 'January' },
@@ -70,6 +72,7 @@ export class CustomDateFilterComponent implements IFilterAngularComp {
     agInit(params: CustomDateFilterParams): void {
         this.params = params;
         this.filterMode = params.filterMode || 'client';
+        this.filterType = params.filterType || 'date';
         this.generateYears();
         this.generateCalendar();
     }
@@ -147,10 +150,10 @@ export class CustomDateFilterComponent implements IFilterAngularComp {
 
     getModel() {
         return this.isFilterActive() ? {
+            filterType: this.filterType,
             date: this.formatDate(this.selectedDate!),
             timeFrom: this.timeFrom,
-            timeTo: this.timeTo,
-            mode: this.filterMode
+            timeTo: this.timeTo
         } : null;
     }
 
@@ -273,17 +276,7 @@ export class CustomDateFilterComponent implements IFilterAngularComp {
         this.timeTo = this.tempTimeTo;
 
         if (this.selectedDate) {
-            if (this.filterMode === 'server') {
-                if (this.params.onFilterChange) {
-                    this.params.onFilterChange(
-                        this.formatDate(this.selectedDate),
-                        this.timeFrom,
-                        this.timeTo
-                    );
-                }
-            } else {
-                this.params.filterChangedCallback();
-            }
+            this.params.filterChangedCallback();
         }
         // Ideally close popup here
         this.params.api.hidePopupMenu();
@@ -302,13 +295,7 @@ export class CustomDateFilterComponent implements IFilterAngularComp {
         this.currentMonth = new Date();
         this.generateCalendar();
 
-        if (this.filterMode === 'server') {
-            if (this.params.onFilterChange) {
-                this.params.onFilterChange('');
-            }
-        } else {
-            this.params.filterChangedCallback();
-        }
+        this.params.filterChangedCallback();
         this.params.api.hidePopupMenu();
     }
 

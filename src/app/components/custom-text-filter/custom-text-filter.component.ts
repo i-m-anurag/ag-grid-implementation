@@ -7,6 +7,7 @@ import { IDoesFilterPassParams, IFilterParams } from 'ag-grid-community';
 export interface CustomTextFilterParams extends IFilterParams {
     placeholder?: string;
     filterMode?: 'client' | 'server';
+    filterType?: string;
     onFilterChange?: (filterValue: string) => void;
 }
 
@@ -22,11 +23,13 @@ export class CustomTextFilterComponent implements IFilterAngularComp {
     params!: CustomTextFilterParams;
     placeholder: string = 'Filter...';
     filterMode: 'client' | 'server' = 'client';
+    filterType: string = 'text';
 
     agInit(params: CustomTextFilterParams): void {
         this.params = params;
         this.placeholder = params.placeholder || 'Filter...';
         this.filterMode = params.filterMode || 'client';
+        this.filterType = params.filterType || 'text';
     }
 
     isFilterActive(): boolean {
@@ -61,20 +64,17 @@ export class CustomTextFilterComponent implements IFilterAngularComp {
     }
 
     getModel() {
-        return this.isFilterActive() ? { text: this.searchText, mode: this.filterMode } : null;
+        return this.isFilterActive() ? {
+            filterType: this.filterType,
+            filter: this.searchText
+        } : null;
     }
 
     setModel(model: any): void {
-        this.searchText = model ? model.text : '';
+        this.searchText = model ? (model.filter || model.text || '') : '';
     }
 
     onSearchChange(): void {
-        if (this.filterMode === 'server') {
-            if (this.params.onFilterChange) {
-                this.params.onFilterChange(this.searchText);
-            }
-        } else {
-            this.params.filterChangedCallback();
-        }
+        this.params.filterChangedCallback();
     }
 }
