@@ -140,6 +140,40 @@ export class AppComponent implements AfterViewInit {
     // Get current active filters from grid
     const filters = this.gridComponent?.getActiveFilters() || {};
 
+    // Example: Simulate API call with timeout (replace with actual API call)
+    this.gridComponent?.setLoading(true);
+
+    // Simulate API response
+    setTimeout(() => {
+      // Calculate which slice of data to show based on offset and limit
+      const startIndex = offset;
+      const endIndex = offset + limit;
+      const paginatedData = this.rowData.slice(startIndex, endIndex);
+
+      // IMPORTANT: Create a new array reference for change detection
+      // This ensures Angular detects the change
+      const newData = [...paginatedData];
+
+      // Update grid data using the grid component method
+      if (this.gridComponent) {
+        this.gridComponent.updateGridData(newData, limit);
+        this.gridComponent.setLoading(false);
+      }
+
+      // Update pagination state
+      this.totalRecords = this.rowData.length;
+      this.currentOffset = offset;
+
+      // Update pagination config with new object reference
+      this.paginationConfig = {
+        ...this.paginationConfig,
+        totalRecords: this.totalRecords,
+        currentOffset: this.currentOffset
+      };
+
+      console.log(`Updated grid with ${newData.length} records (offset: ${offset}, limit: ${limit})`);
+    }, 500);
+
     // Example API call structure:
     /* 
     this.gridComponent.setLoading(true);
@@ -153,8 +187,11 @@ export class AppComponent implements AfterViewInit {
     this.httpClient.post('/api/chats', payload)
       .subscribe({
         next: (response: any) => {
-          // Update grid data
-          this.rowData = response.data;
+          // IMPORTANT: Create new array reference for change detection
+          this.rowData = [...response.data];
+          
+          // Update grid data explicitly with the new page size
+          this.gridComponent.updateGridData(this.rowData, limit);
           
           // Update pagination state from API response
           this.totalRecords = response.totalRecords;

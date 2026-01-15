@@ -133,8 +133,17 @@ export class CommonGridComponent implements OnDestroy {
 
 
 
-    public updateGridData(data: any[]): void {
+    public updateGridData(data: any[], pageSize?: number): void {
         this.rowData = data;
+        // Explicitly update the grid using the AG-Grid API
+        if (this.gridApi) {
+            // Update the page size first if provided (important for server-side pagination)
+            if (pageSize !== undefined) {
+                this.gridApi.paginationSetPageSize(pageSize);
+            }
+            // Then update the row data
+            this.gridApi.setGridOption('rowData', data);
+        }
     }
 
     public setLoading(loading: boolean): void {
