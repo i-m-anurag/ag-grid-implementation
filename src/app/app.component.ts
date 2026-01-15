@@ -1,4 +1,4 @@
-import { Component, AfterViewInit } from '@angular/core';
+import { Component, AfterViewInit, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ColDef, GridApi, GridReadyEvent } from 'ag-grid-community';
 import { CustomTextFilterComponent } from './components/custom-text-filter/custom-text-filter.component';
@@ -30,6 +30,8 @@ interface ChatData {
 export class AppComponent implements AfterViewInit {
   title = 'AG-Grid Implementation - Chat Management';
   gridApi!: GridApi;
+
+  @ViewChild(CommonGridComponent) gridComponent!: CommonGridComponent;
 
   gridApiConfig: GridApiConfig = {
     mode: 'server', // Server-side filtering enabled for mixed mode
@@ -76,13 +78,24 @@ export class AppComponent implements AfterViewInit {
         }
       });
 
-      // Make API call with all active filters
+      // Example: Make API call with all active filters
       /* 
+      // Show loader before API call
+      this.gridComponent.setLoading(true);
+      
       this.httpClient.post('/api/chats/filter', filters)
-        .subscribe((response: any) => {
-          this.rowData = response.data;
-          // Hide loading after data received
-          // Grid component will auto-hide after 5s if not manually hidden
+        .subscribe({
+          next: (response: any) => {
+            this.rowData = response.data;
+            // Hide loader after data received
+            this.gridComponent.setLoading(false);
+          },
+          error: (error) => {
+            console.error('API error:', error);
+            // Hide loader on error too
+            this.gridComponent.setLoading(false);
+          }
+        });
         });
       */
     },

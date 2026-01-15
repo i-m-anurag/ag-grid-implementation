@@ -111,17 +111,8 @@ export class CommonGridComponent implements OnDestroy {
 
             // Only trigger API callback if there are server-mode filters
             if (hasServerFilters) {
-                this.setLoading(true);
                 const mappedFilters = this.mapFiltersToApi(serverFilters);
                 this.apiConfig.onFilterChange(mappedFilters);
-
-                // Note: Parent should call setLoading(false) after API completes
-                // Or use setTimeout to auto-hide after reasonable time
-                setTimeout(() => {
-                    if (this.isLoading) {
-                        this.setLoading(false);
-                    }
-                }, 5000); // Auto-hide after 5 seconds as fallback
             }
         }
     }
