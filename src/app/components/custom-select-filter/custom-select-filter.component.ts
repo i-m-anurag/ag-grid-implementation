@@ -83,10 +83,10 @@ export class CustomSelectFilterComponent implements IFilterAngularComp {
     }
 
     getModel() {
-        return this.isFilterActive() ? {
+        return {
             filterType: this.filterType,
-            options: Array.from(this.selectedOptions)
-        } : null;
+            options: this.isFilterActive() ? Array.from(this.selectedOptions) : []
+        };
     }
 
     setModel(model: any): void {
@@ -99,6 +99,7 @@ export class CustomSelectFilterComponent implements IFilterAngularComp {
     }
 
     toggleOption(option: string): void {
+
         if (this.selectionMode === 'single') {
             // Allow unselection by clicking the same option again
             if (this.selectedOptions.has(option)) {
