@@ -33,6 +33,11 @@ export class AppComponent implements AfterViewInit {
 
   @ViewChild(CommonGridComponent) gridComponent!: CommonGridComponent;
 
+  // Pagination state
+  currentOffset: number = 0;
+  pageSize: number = 10;
+  totalRecords: number = 0;
+
   gridApiConfig: GridApiConfig = {
     mode: 'server', // Server-side filtering enabled for mixed mode
     debounceTime: 500, // Wait 500ms after last filter change before calling API
@@ -80,23 +85,9 @@ export class AppComponent implements AfterViewInit {
 
       // Example: Make API call with all active filters
       /* 
-      // Show loader before API call
-      this.gridComponent.setLoading(true);
-      
-      this.httpClient.post('/api/chats/filter', filters)
-        .subscribe({
-          next: (response: any) => {
-            this.rowData = response.data;
-            // Hide loader after data received
-            this.gridComponent.setLoading(false);
-          },
-          error: (error) => {
-            console.error('API error:', error);
-            // Hide loader on error too
-            this.gridComponent.setLoading(false);
-          }
-        });
-        });
+      // Reset pagination to first page when filters change
+      this.currentOffset = 0;
+      this.fetchDataWithPagination(0, this.pageSize);
       */
     },
     // Callback when loading state changes
@@ -113,12 +104,18 @@ export class AppComponent implements AfterViewInit {
 
   // Pagination configuration
   paginationConfig: PaginationConfig = {
-    mode: 'server', // Switch to server mode for testing
+    mode: 'server',
     totalRecords: 0,
-    onPageChange: (page: number, pageSize: number) => {
-      console.log(`Page changed to ${page}, page size: ${pageSize}`);
-      // Simulate fetching new page data
-      this.fetchMockData(page, pageSize);
+    currentOffset: 0,
+    onPageChange: (offset: number, limit: number) => {
+      console.log(`Pagination changed - offset: ${offset}, limit: ${limit}`);
+
+      // Update local state
+      this.currentOffset = offset;
+      this.pageSize = limit;
+
+      // Fetch data with current filters and new pagination
+      this.fetchDataWithPagination(offset, limit);
     }
   };
 
@@ -133,14 +130,51 @@ export class AppComponent implements AfterViewInit {
         totalRecords: 156 // Example: 156 total records
       };
       // Also load the first page of data
-      this.fetchMockData(1, 10);
+      this.fetchDataWithPagination(0, 10);
     }, 2000); // 2 second delay
   }
 
-  fetchMockData(page: number, pageSize: number) {
-    // Mock data fetching logic - in real app this would call API
-    console.log(`Fetching data for page ${page}`);
-    // Here you would normally update this.rowData with new data
+  fetchDataWithPagination(offset: number, limit: number) {
+    console.log(`Fetching data with offset: ${offset}, limit: ${limit}`);
+
+    // Get current active filters from grid
+    const filters = this.gridComponent?.getActiveFilters() || {};
+
+    // Example API call structure:
+    /* 
+    this.gridComponent.setLoading(true);
+    
+    const payload = {
+      ...filters,  // Include all active filters
+      offset: offset,
+      limit: limit
+    };
+    
+    this.httpClient.post('/api/chats', payload)
+      .subscribe({
+        next: (response: any) => {
+          // Update grid data
+          this.rowData = response.data;
+          
+          // Update pagination state from API response
+          this.totalRecords = response.totalRecords;
+          this.currentOffset = response.offset || offset;
+          
+          // Update pagination config to reflect new state
+          this.paginationConfig = {
+            ...this.paginationConfig,
+            totalRecords: this.totalRecords,
+            currentOffset: this.currentOffset
+          };
+          
+          this.gridComponent.setLoading(false);
+        },
+        error: (error) => {
+          console.error('API error:', error);
+          this.gridComponent.setLoading(false);
+        }
+      });
+    */
   }
 
   // Column definitions with custom filters

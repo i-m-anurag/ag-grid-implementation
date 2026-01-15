@@ -6,7 +6,8 @@ import { GridApi } from 'ag-grid-community';
 export interface PaginationConfig {
     mode?: 'client' | 'server';
     totalRecords?: number;
-    onPageChange?: (page: number, pageSize: number) => void;
+    currentOffset?: number;
+    onPageChange?: (offset: number, limit: number) => void;
 }
 
 @Component({
@@ -29,6 +30,7 @@ export class CustomPaginationComponent implements OnInit, OnDestroy, OnChanges {
     visiblePages: number[] = [];
     paginationMode: 'client' | 'server' = 'client';
     totalRecords: number = 0;
+    currentOffset: number = 0;
 
     ngOnInit(): void {
         this.updateConfig();
@@ -152,10 +154,13 @@ export class CustomPaginationComponent implements OnInit, OnDestroy, OnChanges {
 
     private fetchServerData(page: number, pageSize: number): void {
         if (this.config.onPageChange) {
-            this.config.onPageChange(page, pageSize);
+            const offset = this.getOffsetFromPage(page, pageSize);
+            this.config.onPageChange(offset, pageSize);
         }
+    }
 
-        console.log('Server pagination would fetch:', { page, pageSize });
+    private getOffsetFromPage(page: number, pageSize: number): number {
+        return (page - 1) * pageSize;
     }
 
     private getActiveFilters(): any {

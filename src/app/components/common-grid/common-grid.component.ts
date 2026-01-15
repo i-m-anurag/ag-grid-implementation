@@ -164,4 +164,11 @@ export class CommonGridComponent implements OnDestroy {
         const filterModel = this.gridApi.getFilterModel();
         return Object.keys(filterModel).length > 0;
     }
+
+    public getActiveFilters(): any {
+        if (this.gridApi) {
+            return this.gridApi.getFilterModel();
+        }
+        return {};
+    }
 }
