@@ -32,7 +32,7 @@ export class AppComponent implements AfterViewInit {
   gridApi!: GridApi;
 
   gridApiConfig: GridApiConfig = {
-    mode: 'server', // Server-side filtering enabled
+    mode: 'server', // Server-side filtering enabled for mixed mode
     debounceTime: 500, // Wait 500ms after last filter change before calling API
     // Map grid column names to API field names
     columnMapping: {
@@ -138,7 +138,7 @@ export class AppComponent implements AfterViewInit {
       filter: CustomTextFilterComponent,
       filterParams: {
         placeholder: 'Filter Chat ID...',
-        filterMode: 'server',
+        filterMode: 'server', // 👈 Triggers API
         filterType: 'text'
       },
       minWidth: 150,
@@ -151,7 +151,7 @@ export class AppComponent implements AfterViewInit {
       filter: CustomTextFilterComponent,
       filterParams: {
         placeholder: 'Filter topic...',
-        filterMode: 'server',
+        filterMode: 'client',
         filterType: 'text'
       },
       minWidth: 200,
@@ -165,7 +165,7 @@ export class AppComponent implements AfterViewInit {
         options: ['English', 'Arabic', 'Spanish', 'French', 'German', 'Italian'],
         variant: 'default',
         selectionMode: 'single',
-        filterMode: 'server',
+        filterMode: 'client', // 👈 Filters locally
         filterType: 'select'
       },
       minWidth: 120,
@@ -176,7 +176,7 @@ export class AppComponent implements AfterViewInit {
       headerName: 'Start Date & Time',
       filter: CustomDateFilterComponent,
       filterParams: {
-        filterMode: 'server',
+        filterMode: 'client',
         filterType: 'date'
       },
       minWidth: 180,
@@ -188,7 +188,7 @@ export class AppComponent implements AfterViewInit {
       filter: CustomTextFilterComponent,
       filterParams: {
         placeholder: 'Filter duration',
-        filterMode: 'server',
+        filterMode: 'client',
         filterType: 'text'
       },
       maxWidth: 120,
@@ -203,7 +203,7 @@ export class AppComponent implements AfterViewInit {
         options: ['Resolved', 'Pending', 'In Progress', 'Closed'],
         variant: 'badge',
         selectionMode: 'multiple',
-        filterMode: 'server',
+        filterMode: 'server', // 👈 Triggers API
         filterType: 'select',
         badgeColors: {
           'resolved': { bg: '#D1FAE5', text: '#059669' },

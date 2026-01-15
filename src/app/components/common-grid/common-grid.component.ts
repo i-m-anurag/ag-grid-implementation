@@ -46,6 +46,7 @@ export class CommonGridComponent implements OnDestroy {
     private filterSubject = new Subject<any>();
     private gridApi: any;
     public isLoading: boolean = false;
+    private columnFilterModes: Map<string, 'client' | 'server'> = new Map();
 
     public gridOptions: GridOptions = {
         pagination: true,
@@ -71,6 +72,15 @@ export class CommonGridComponent implements OnDestroy {
     onGridReady(params: GridReadyEvent) {
         console.log('Grid is ready');
         this.gridApi = params.api;
+
+        // Extract filter modes from column definitions
+        this.columnDefs.forEach(colDef => {
+            if (colDef.field && colDef.filterParams) {
+                const filterMode = (colDef.filterParams as any)['filterMode'] || 'client';
+                this.columnFilterModes.set(colDef.field, filterMode);
+            }
+        });
+
         this.gridReady.emit(params);
     }
 
@@ -87,17 +97,32 @@ export class CommonGridComponent implements OnDestroy {
 
     private handleFilterChange(filterModel: any): void {
         if (this.apiConfig.mode === 'server' && this.apiConfig.onFilterChange) {
-            this.setLoading(true);
-            const mappedFilters = this.mapFiltersToApi(filterModel);
-            this.apiConfig.onFilterChange(mappedFilters);
+            // Separate server-mode and client-mode filters
+            const serverFilters: any = {};
+            let hasServerFilters = false;
 
-            // Note: Parent should call setLoading(false) after API completes
-            // Or use setTimeout to auto-hide after reasonable time
-            setTimeout(() => {
-                if (this.isLoading) {
-                    this.setLoading(false);
+            Object.keys(filterModel).forEach(column => {
+                const filterMode = this.columnFilterModes.get(column) || 'client';
+                if (filterMode === 'server') {
+                    serverFilters[column] = filterModel[column];
+                    hasServerFilters = true;
                 }
-            }, 5000); // Auto-hide after 5 seconds as fallback
+            });
+
+            // Only trigger API callback if there are server-mode filters
+            if (hasServerFilters) {
+                this.setLoading(true);
+                const mappedFilters = this.mapFiltersToApi(serverFilters);
+                this.apiConfig.onFilterChange(mappedFilters);
+
+                // Note: Parent should call setLoading(false) after API completes
+                // Or use setTimeout to auto-hide after reasonable time
+                setTimeout(() => {
+                    if (this.isLoading) {
+                        this.setLoading(false);
+                    }
+                }, 5000); // Auto-hide after 5 seconds as fallback
+            }
         }
     }
 

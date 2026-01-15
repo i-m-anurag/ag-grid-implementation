@@ -100,8 +100,13 @@ export class CustomSelectFilterComponent implements IFilterAngularComp {
 
     toggleOption(option: string): void {
         if (this.selectionMode === 'single') {
-            this.selectedOptions.clear();
-            this.selectedOptions.add(option);
+            // Allow unselection by clicking the same option again
+            if (this.selectedOptions.has(option)) {
+                this.selectedOptions.clear();
+            } else {
+                this.selectedOptions.clear();
+                this.selectedOptions.add(option);
+            }
         } else {
             if (option === 'All') {
                 this.selectedOptions.clear();

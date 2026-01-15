@@ -144,8 +144,42 @@ export class CustomDateFilterComponent implements IFilterAngularComp {
             return false;
         }
 
+        // Parse ISO date (e.g., "2026-01-15T07:03:12.175Z")
+        const cellDate = new Date(cellValue);
+
+        if (isNaN(cellDate.getTime())) {
+            return false;
+        }
+
+        // Compare dates (ignoring time)
         const selectedDateStr = this.formatDate(this.selectedDate!);
-        return cellValue.toString().startsWith(selectedDateStr);
+        const cellDateStr = this.formatDate(cellDate);
+
+        if (cellDateStr !== selectedDateStr) {
+            return false;
+        }
+
+        // If time range is specified, check time
+        if (this.timeFrom || this.timeTo) {
+            const cellTime = this.formatTime(cellDate);
+            const cellMinutes = this.timeToMinutes(cellTime);
+
+            if (this.timeFrom) {
+                const fromMinutes = this.timeToMinutes(this.timeFrom);
+                if (cellMinutes < fromMinutes) {
+                    return false;
+                }
+            }
+
+            if (this.timeTo) {
+                const toMinutes = this.timeToMinutes(this.timeTo);
+                if (cellMinutes > toMinutes) {
+                    return false;
+                }
+            }
+        }
+
+        return true;
     }
 
     getModel() {
@@ -304,5 +338,16 @@ export class CustomDateFilterComponent implements IFilterAngularComp {
         const month = (date.getMonth() + 1).toString().padStart(2, '0');
         const day = date.getDate().toString().padStart(2, '0');
         return `${year}-${month}-${day}`;
+    }
+
+    private formatTime(date: Date): string {
+        const hours = date.getHours().toString().padStart(2, '0');
+        const minutes = date.getMinutes().toString().padStart(2, '0');
+        return `${hours}:${minutes}`;
+    }
+
+    private timeToMinutes(time: string): number {
+        const [hours, minutes] = time.split(':').map(Number);
+        return hours * 60 + minutes;
     }
 }
