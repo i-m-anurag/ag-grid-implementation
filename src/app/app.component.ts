@@ -172,7 +172,7 @@ export class AppComponent implements AfterViewInit {
       };
 
       console.log(`Updated grid with ${newData.length} records (offset: ${offset}, limit: ${limit})`);
-    }, 500);
+    }, 10000); // 10 second delay to see skeleton loader
 
     // Example API call structure:
     /* 

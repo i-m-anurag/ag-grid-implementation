@@ -9,6 +9,8 @@ import { CustomSelectFilterComponent } from '../custom-select-filter/custom-sele
 import { CustomDateFilterComponent } from '../custom-date-filter/custom-date-filter.component';
 import { ChatStatusBadgeComponent } from '../chat-status-badge/chat-status-badge.component';
 import { ActionCellRendererComponent } from '../action-cell-renderer/action-cell-renderer.component';
+import { SkeletonCellRendererComponent } from '../skeleton-cell-renderer/skeleton-cell-renderer.component';
+import { SkeletonOverlayComponent } from '../skeleton-overlay/skeleton-overlay.component';
 
 export interface GridApiConfig {
     mode?: 'client' | 'server';
@@ -29,7 +31,9 @@ export interface GridApiConfig {
         CustomSelectFilterComponent,
         CustomDateFilterComponent,
         ChatStatusBadgeComponent,
-        ActionCellRendererComponent
+        ActionCellRendererComponent,
+        SkeletonCellRendererComponent,
+        SkeletonOverlayComponent
     ],
     templateUrl: './common-grid.component.html',
     styleUrls: ['./common-grid.component.scss']
@@ -54,7 +58,11 @@ export class CommonGridComponent implements OnDestroy {
         paginationPageSize: this.paginationPageSize,
         suppressPaginationPanel: true,
         domLayout: 'normal',
-        popupParent: document.body
+        popupParent: document.body,
+        suppressLoadingOverlay: true,
+        defaultColDef: {
+            cellRenderer: SkeletonCellRendererComponent
+        }
     };
 
     constructor() {
@@ -152,6 +160,14 @@ export class CommonGridComponent implements OnDestroy {
 
     public setLoading(loading: boolean): void {
         this.isLoading = loading;
+        if (this.gridApi) {
+            if (loading) {
+                // Create 10 skeleton rows with the _isSkeletonRow flag
+                const skeletonRows = Array(10).fill(null).map(() => ({ _isSkeletonRow: true }));
+                this.gridApi.setGridOption('rowData', skeletonRows);
+            }
+            // Note: When loading is false, updateGridData will be called with actual data
+        }
         if (this.apiConfig.onLoadingChange) {
             this.apiConfig.onLoadingChange(loading);
         }
