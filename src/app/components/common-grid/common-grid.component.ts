@@ -47,6 +47,7 @@ export class CommonGridComponent implements OnDestroy {
     private gridApi: any;
     public isLoading: boolean = false;
     private columnFilterModes: Map<string, 'client' | 'server'> = new Map();
+    private lastServerFiltersJson: string = '';
 
     public gridOptions: GridOptions = {
         pagination: true,
@@ -99,18 +100,21 @@ export class CommonGridComponent implements OnDestroy {
         if (this.apiConfig.mode === 'server' && this.apiConfig.onFilterChange) {
             // Separate server-mode and client-mode filters
             const serverFilters: any = {};
-            let hasServerFilters = false;
+            // We don't need 'hasServerFilters' anymore since we want to trigger even if empty
 
             Object.keys(filterModel).forEach(column => {
                 const filterMode = this.columnFilterModes.get(column) || 'client';
                 if (filterMode === 'server') {
                     serverFilters[column] = filterModel[column];
-                    hasServerFilters = true;
                 }
             });
 
-            // Only trigger API callback if there are server-mode filters
-            if (hasServerFilters) {
+            // Check if server filters actually changed
+            const currentServerFiltersJson = JSON.stringify(serverFilters);
+
+            if (this.lastServerFiltersJson !== currentServerFiltersJson) {
+                this.lastServerFiltersJson = currentServerFiltersJson;
+
                 const mappedFilters = this.mapFiltersToApi(serverFilters);
                 this.apiConfig.onFilterChange(mappedFilters);
             }
