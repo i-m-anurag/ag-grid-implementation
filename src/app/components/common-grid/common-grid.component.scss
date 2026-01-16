@@ -56,3 +56,47 @@
     }
   }
 }
+
+/* =====================================================
+   SKELETON LOADER STYLES
+   Applied automatically when row has .skeleton-row class
+   Shows one skeleton bar per row (row-wise, not cell-wise)
+   ===================================================== */
+
+::ng-deep .skeleton-row {
+  position: relative;
+
+  // Hide all cell content
+  .ag-cell {
+    &>* {
+      visibility: hidden !important;
+    }
+  }
+
+  // Show one skeleton bar across the entire row
+  &::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 8px;
+    right: 8px;
+    height: 16px;
+    transform: translateY(-50%);
+    background: linear-gradient(90deg, #e0e0e0 25%, #f0f0f0 50%, #e0e0e0 75%);
+    background-size: 200% 100%;
+    border-radius: 4px;
+    animation: skeleton-shimmer 1.5s infinite ease-in-out;
+    pointer-events: none;
+    z-index: 1;
+  }
+}
+
+@keyframes skeleton-shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+
+  100% {
+    background-position: -200% 0;
+  }
+}

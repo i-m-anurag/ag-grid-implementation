@@ -9,8 +9,6 @@ import { CustomSelectFilterComponent } from '../custom-select-filter/custom-sele
 import { CustomDateFilterComponent } from '../custom-date-filter/custom-date-filter.component';
 import { ChatStatusBadgeComponent } from '../chat-status-badge/chat-status-badge.component';
 import { ActionCellRendererComponent } from '../action-cell-renderer/action-cell-renderer.component';
-import { SkeletonCellRendererComponent } from '../skeleton-cell-renderer/skeleton-cell-renderer.component';
-import { SkeletonOverlayComponent } from '../skeleton-overlay/skeleton-overlay.component';
 import { NoDataOverlayComponent } from '../no-data-overlay/no-data-overlay.component';
 import { ErrorOverlayComponent } from '../error-overlay/error-overlay.component';
 
@@ -34,8 +32,6 @@ export interface GridApiConfig {
         CustomDateFilterComponent,
         ChatStatusBadgeComponent,
         ActionCellRendererComponent,
-        SkeletonCellRendererComponent,
-        SkeletonOverlayComponent,
         NoDataOverlayComponent,
         ErrorOverlayComponent
     ],
@@ -68,8 +64,9 @@ export class CommonGridComponent implements OnDestroy {
         popupParent: document.body,
         suppressLoadingOverlay: true,
         noRowsOverlayComponent: NoDataOverlayComponent,
-        defaultColDef: {
-            cellRenderer: SkeletonCellRendererComponent
+        // CSS-based skeleton: apply 'skeleton-row' class when row has _isSkeletonRow flag
+        rowClassRules: {
+            'skeleton-row': (params: any) => params.data?._isSkeletonRow === true
         }
     };
 
@@ -171,8 +168,17 @@ export class CommonGridComponent implements OnDestroy {
         this.hasError = false; // Clear error state when loading
         if (this.gridApi) {
             if (loading) {
-                // Create 10 skeleton rows with the _isSkeletonRow flag
-                const skeletonRows = Array(10).fill(null).map(() => ({ _isSkeletonRow: true }));
+                // Create 10 skeleton rows with _isSkeletonRow flag and placeholder values
+                const skeletonRows = Array(10).fill(null).map(() => {
+                    const row: any = { _isSkeletonRow: true };
+                    // Add placeholder values for each column so cells render
+                    this.columnDefs.forEach((col: any) => {
+                        if (col.field) {
+                            row[col.field] = '';
+                        }
+                    });
+                    return row;
+                });
                 this.gridApi.setGridOption('rowData', skeletonRows);
             }
             // Note: When loading is false, updateGridData will be called with actual data

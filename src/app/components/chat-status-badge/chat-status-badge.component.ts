@@ -26,6 +26,6 @@ export class ChatStatusBadgeComponent implements ICellRendererAngularComp {
     }
 
     private getStatusClass(status: string): string {
-        return status.toLowerCase().replace(/\s+/g, '-');
+        return status?.toLowerCase().replace(/\s+/g, '-') || '';
     }
 }
