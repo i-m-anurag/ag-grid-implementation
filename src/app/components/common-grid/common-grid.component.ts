@@ -11,6 +11,8 @@ import { ChatStatusBadgeComponent } from '../chat-status-badge/chat-status-badge
 import { ActionCellRendererComponent } from '../action-cell-renderer/action-cell-renderer.component';
 import { SkeletonCellRendererComponent } from '../skeleton-cell-renderer/skeleton-cell-renderer.component';
 import { SkeletonOverlayComponent } from '../skeleton-overlay/skeleton-overlay.component';
+import { NoDataOverlayComponent } from '../no-data-overlay/no-data-overlay.component';
+import { ErrorOverlayComponent } from '../error-overlay/error-overlay.component';
 
 export interface GridApiConfig {
     mode?: 'client' | 'server';
@@ -33,7 +35,9 @@ export interface GridApiConfig {
         ChatStatusBadgeComponent,
         ActionCellRendererComponent,
         SkeletonCellRendererComponent,
-        SkeletonOverlayComponent
+        SkeletonOverlayComponent,
+        NoDataOverlayComponent,
+        ErrorOverlayComponent
     ],
     templateUrl: './common-grid.component.html',
     styleUrls: ['./common-grid.component.scss']
@@ -52,6 +56,9 @@ export class CommonGridComponent implements OnDestroy {
     public isLoading: boolean = false;
     private columnFilterModes: Map<string, 'client' | 'server'> = new Map();
     private lastServerFiltersJson: string = '';
+    public hasError: boolean = false;
+    public errorMessage: string = '';
+    private onRetryCallback?: () => void;
 
     public gridOptions: GridOptions = {
         pagination: true,
@@ -60,6 +67,7 @@ export class CommonGridComponent implements OnDestroy {
         domLayout: 'normal',
         popupParent: document.body,
         suppressLoadingOverlay: true,
+        noRowsOverlayComponent: NoDataOverlayComponent,
         defaultColDef: {
             cellRenderer: SkeletonCellRendererComponent
         }
@@ -160,6 +168,7 @@ export class CommonGridComponent implements OnDestroy {
 
     public setLoading(loading: boolean): void {
         this.isLoading = loading;
+        this.hasError = false; // Clear error state when loading
         if (this.gridApi) {
             if (loading) {
                 // Create 10 skeleton rows with the _isSkeletonRow flag
@@ -170,6 +179,43 @@ export class CommonGridComponent implements OnDestroy {
         }
         if (this.apiConfig.onLoadingChange) {
             this.apiConfig.onLoadingChange(loading);
+        }
+    }
+
+    public setError(message: string, onRetry?: () => void): void {
+        this.hasError = true;
+        this.isLoading = false;
+        this.errorMessage = message;
+        this.onRetryCallback = onRetry;
+        if (this.gridApi) {
+            // Clear row data first
+            this.gridApi.setGridOption('rowData', []);
+            // Enable loading overlay temporarily for error display
+            this.gridApi.setGridOption('suppressLoadingOverlay', false);
+            // Set the error overlay component and params
+            this.gridApi.setGridOption('loadingOverlayComponent', ErrorOverlayComponent);
+            this.gridApi.setGridOption('loadingOverlayComponentParams', {
+                errorMessage: message,
+                onRetry: () => {
+                    this.clearError();
+                    if (this.onRetryCallback) {
+                        this.onRetryCallback();
+                    }
+                }
+            });
+            // Show the overlay
+            this.gridApi.showLoadingOverlay();
+        }
+    }
+
+    public clearError(): void {
+        this.hasError = false;
+        this.errorMessage = '';
+        if (this.gridApi) {
+            this.gridApi.hideOverlay();
+            // Reset overlay settings
+            this.gridApi.setGridOption('loadingOverlayComponent', undefined);
+            this.gridApi.setGridOption('suppressLoadingOverlay', true);
         }
     }
 

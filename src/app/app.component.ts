@@ -150,8 +150,7 @@ export class AppComponent implements AfterViewInit {
       const endIndex = offset + limit;
       const paginatedData = this.rowData.slice(startIndex, endIndex);
 
-      // IMPORTANT: Create a new array reference for change detection
-      // This ensures Angular detects the change
+      // Create a new array reference for change detection
       const newData = [...paginatedData];
 
       // Update grid data using the grid component method
@@ -172,7 +171,39 @@ export class AppComponent implements AfterViewInit {
       };
 
       console.log(`Updated grid with ${newData.length} records (offset: ${offset}, limit: ${limit})`);
-    }, 10000); // 10 second delay to see skeleton loader
+    }, 2000); // 2 second delay
+
+    // =====================================================
+    // REFERENCE: No Data Overlay Example
+    // Uncomment below to test No Data overlay
+    // =====================================================
+    /*
+    setTimeout(() => {
+      if (this.gridComponent) {
+        this.gridComponent.updateGridData([], limit);  // Empty array triggers No Data overlay
+        this.gridComponent.setLoading(false);
+      }
+    }, 2000);
+    */
+
+    // =====================================================
+    // REFERENCE: Error Overlay Example
+    // Uncomment below to test Error overlay
+    // =====================================================
+    /*
+    setTimeout(() => {
+      if (this.gridComponent) {
+        this.gridComponent.setError(
+          'Server Error: Unable to fetch data. Please try again later.',
+          () => {
+            // Retry callback - called when user clicks Retry button
+            console.log('Retrying...');
+            this.fetchDataWithPagination(offset, limit);
+          }
+        );
+      }
+    }, 3000);
+    */
 
     // Example API call structure:
     /* 
