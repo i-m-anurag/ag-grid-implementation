@@ -95,6 +95,11 @@ export class CommonGridComponent implements OnDestroy {
             }
         });
 
+        // Apply pending loading state if setLoading was called before grid was ready
+        if (this.isLoading) {
+            this.applySkeletonRows();
+        }
+
         this.gridReady.emit(params);
     }
 
@@ -166,26 +171,31 @@ export class CommonGridComponent implements OnDestroy {
     public setLoading(loading: boolean): void {
         this.isLoading = loading;
         this.hasError = false; // Clear error state when loading
-        if (this.gridApi) {
-            if (loading) {
-                // Create 10 skeleton rows with _isSkeletonRow flag and placeholder values
-                const skeletonRows = Array(10).fill(null).map(() => {
-                    const row: any = { _isSkeletonRow: true };
-                    // Add placeholder values for each column so cells render
-                    this.columnDefs.forEach((col: any) => {
-                        if (col.field) {
-                            row[col.field] = '';
-                        }
-                    });
-                    return row;
-                });
-                this.gridApi.setGridOption('rowData', skeletonRows);
-            }
-            // Note: When loading is false, updateGridData will be called with actual data
+        if (loading) {
+            this.applySkeletonRows();
         }
         if (this.apiConfig.onLoadingChange) {
             this.apiConfig.onLoadingChange(loading);
         }
+    }
+
+    private applySkeletonRows(): void {
+        if (!this.gridApi) {
+            // Grid not ready yet, skeleton will be applied when grid is ready
+            return;
+        }
+        // Create 10 skeleton rows with _isSkeletonRow flag and placeholder values
+        const skeletonRows = Array(10).fill(null).map(() => {
+            const row: any = { _isSkeletonRow: true };
+            // Add placeholder values for each column so cells render
+            this.columnDefs.forEach((col: any) => {
+                if (col.field) {
+                    row[col.field] = '';
+                }
+            });
+            return row;
+        });
+        this.gridApi.setGridOption('rowData', skeletonRows);
     }
 
     public setError(message: string, onRetry?: () => void): void {

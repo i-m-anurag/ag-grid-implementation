@@ -120,18 +120,24 @@ export class AppComponent implements AfterViewInit {
   };
 
   constructor() {
-    // Simulate initial API call delay
-    console.log('Simulating initial server data fetch...');
+    // Test scenario: setLoading called BEFORE grid is ready
+    console.log('Setting loading state before grid is ready...');
+
+    // Simulate calling setLoading before grid mounts (e.g., API call starts immediately)
+    setTimeout(() => {
+      this.gridComponent?.setLoading(true);
+    }, 0);
+
+    // Simulate data arriving after delay
     setTimeout(() => {
       console.log('Async data received! Updating total records...');
-      // Create a NEW object reference to trigger ngOnChanges
       this.paginationConfig = {
         ...this.paginationConfig,
-        totalRecords: 156 // Example: 156 total records
+        totalRecords: 156
       };
-      // Also load the first page of data
+      // Load the first page of data
       this.fetchDataWithPagination(0, 10);
-    }, 2000); // 2 second delay
+    }, 3000); // 3 second delay to see skeleton loader
   }
 
   fetchDataWithPagination(offset: number, limit: number) {
