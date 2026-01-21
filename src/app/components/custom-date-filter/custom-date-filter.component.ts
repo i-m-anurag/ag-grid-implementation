@@ -7,6 +7,8 @@ import { IDoesFilterPassParams, IFilterParams } from 'ag-grid-community';
 export interface CustomDateFilterParams extends IFilterParams {
     filterMode?: 'client' | 'server';
     filterType?: string;
+    fromDate?: string | Date;  // Minimum selectable date
+    toDate?: string | Date;    // Maximum selectable date
     onFilterChange?: (date: string, timeFrom?: string, timeTo?: string) => void;
 }
 
@@ -41,6 +43,10 @@ export class CustomDateFilterComponent implements IFilterAngularComp {
     filterMode: 'client' | 'server' = 'client';
     filterType: string = 'date';
 
+    // Date range constraints
+    fromDate: Date | null = null;
+    toDate: Date | null = null;
+
     availableMonths = [
         { value: 0, label: 'January' },
         { value: 1, label: 'February' },
@@ -73,8 +79,35 @@ export class CustomDateFilterComponent implements IFilterAngularComp {
         this.params = params;
         this.filterMode = params.filterMode || 'client';
         this.filterType = params.filterType || 'date';
+
+        // Parse date range constraints
+        this.fromDate = this.parseDate(params.fromDate);
+        this.toDate = this.parseDate(params.toDate);
+
         this.generateYears();
         this.generateCalendar();
+    }
+
+    private parseDate(date: string | Date | undefined): Date | null {
+        if (!date) return null;
+        const parsed = date instanceof Date ? date : new Date(date);
+        return isNaN(parsed.getTime()) ? null : parsed;
+    }
+
+    isDateDisabled(day: CalendarDay): boolean {
+        const date = new Date(day.year, day.month, day.day);
+
+        if (this.fromDate) {
+            const fromStart = new Date(this.fromDate.getFullYear(), this.fromDate.getMonth(), this.fromDate.getDate());
+            if (date < fromStart) return true;
+        }
+
+        if (this.toDate) {
+            const toEnd = new Date(this.toDate.getFullYear(), this.toDate.getMonth(), this.toDate.getDate());
+            if (date > toEnd) return true;
+        }
+
+        return false;
     }
 
     // Called every time the popup opens
@@ -279,6 +312,9 @@ export class CustomDateFilterComponent implements IFilterAngularComp {
     }
 
     selectDay(day: CalendarDay): void {
+        // Prevent selection of disabled dates
+        if (this.isDateDisabled(day)) return;
+
         // Update TEMP state only
         this.tempSelectedDate = new Date(day.year, day.month, day.day);
 

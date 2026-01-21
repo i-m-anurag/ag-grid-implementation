@@ -445,6 +445,16 @@
                 background-color: #0066FF;
                 color: white;
             }
+
+            &.disabled {
+                opacity: 0.35;
+                cursor: not-allowed;
+                pointer-events: none;
+                
+                &:hover {
+                    background-color: transparent;
+                }
+            }
         }
     }
 

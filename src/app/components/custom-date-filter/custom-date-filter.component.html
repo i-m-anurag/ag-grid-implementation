@@ -28,6 +28,7 @@
              [class.other-month]="!day.isCurrentMonth"
              [class.selected]="isSelectedDay(day)"
              [class.today]="isToday(day)"
+             [class.disabled]="isDateDisabled(day)"
              (click)="selectDay(day)">
           {{ day.day }}
         </div>

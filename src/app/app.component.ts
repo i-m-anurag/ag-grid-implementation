@@ -298,7 +298,9 @@ export class AppComponent implements AfterViewInit {
       filter: CustomDateFilterComponent,
       filterParams: {
         filterMode: 'client',
-        filterType: 'date'
+        filterType: 'date',
+        fromDate: '2025-09-01',  // Example: Only allow dates from Sep 1, 2025
+        toDate: '2025-09-30'     // Example: Only allow dates until Sep 30, 2025
       },
       minWidth: 180,
       sortable: true
