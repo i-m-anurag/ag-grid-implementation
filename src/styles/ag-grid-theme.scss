@@ -349,6 +349,51 @@
         gap: 8px; // Reduced gap
     }
 
+    // Date Range Display Header
+    .range-display {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        padding: 8px 12px;
+        background: #F8FAFC;
+        border-radius: 6px;
+        border: 1px solid #E2E8F0;
+        margin-bottom: 4px;
+
+        .range-info {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 2px;
+        }
+
+        .range-label {
+            font-size: 10px;
+            color: #94A3B8;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+
+            &.active {
+                color: #0066FF;
+                font-weight: 600;
+            }
+        }
+
+        .range-value {
+            font-size: 12px;
+            color: #334155;
+            font-weight: 500;
+        }
+
+        .range-arrow {
+            color: #94A3B8;
+            font-size: 14px;
+            font-weight: 500;
+        }
+    }
+
     .calendar-wrapper {
         background: #fff;
         border-radius: 6px;
@@ -427,6 +472,7 @@
             font-size: 12px; // Smaller font
             cursor: pointer;
             border-radius: 4px;
+            transition: all 0.15s ease;
 
             &:hover {
                 background-color: #f5f5f5;
@@ -446,11 +492,33 @@
                 color: white;
             }
 
+            // Date range specific styles
+            &.in-range {
+                background-color: #DBEAFE;
+                border-radius: 0;
+            }
+
+            &.range-start {
+                background-color: #0066FF;
+                color: white;
+                border-radius: 4px 0 0 4px;
+            }
+
+            &.range-end {
+                background-color: #0066FF;
+                color: white;
+                border-radius: 0 4px 4px 0;
+            }
+
+            &.range-start.range-end {
+                border-radius: 4px;
+            }
+
             &.disabled {
                 opacity: 0.35;
                 cursor: not-allowed;
                 pointer-events: none;
-                
+
                 &:hover {
                     background-color: transparent;
                 }

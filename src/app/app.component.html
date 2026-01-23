@@ -2,6 +2,26 @@
   <header>
     <h1>{{ title }}</h1>
     <p>Chat management system with custom filters and pagination</p>
+    
+    <!-- Global Date Range Picker -->
+    <div class="date-range-picker">
+      <label class="date-label">Date Range:</label>
+      <div class="date-inputs">
+        <input 
+          type="date" 
+          class="date-input"
+          [value]="globalFromDate"
+          (change)="onDateRangeChange($event, 'from')"
+          placeholder="From Date">
+        <span class="date-separator">to</span>
+        <input 
+          type="date" 
+          class="date-input"
+          [value]="globalToDate"
+          (change)="onDateRangeChange($event, 'to')"
+          placeholder="To Date">
+      </div>
+    </div>
   </header>
   
   <main class="grid-wrapper">

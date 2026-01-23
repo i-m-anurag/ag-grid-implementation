@@ -1,5 +1,18 @@
 <div class="custom-date-filter">
   <div class="filter-content">
+    <!-- Date Range Display Header (for date-range mode) -->
+    <div class="range-display" *ngIf="filterType === 'date-range'">
+      <div class="range-info">
+        <span class="range-label" [class.active]="rangeSelectionStep === 'start'">From:</span>
+        <span class="range-value">{{ tempSelectedStartDate ? formatDisplayDate(tempSelectedStartDate) : 'Select start' }}</span>
+      </div>
+      <span class="range-arrow">→</span>
+      <div class="range-info">
+        <span class="range-label" [class.active]="rangeSelectionStep === 'end'">To:</span>
+        <span class="range-value">{{ tempSelectedEndDate ? formatDisplayDate(tempSelectedEndDate) : 'Select end' }}</span>
+      </div>
+    </div>
+
     <!-- Custom Inline Calendar -->
     <div class="calendar-wrapper">
       <!-- Calendar Header -->
@@ -29,6 +42,9 @@
              [class.selected]="isSelectedDay(day)"
              [class.today]="isToday(day)"
              [class.disabled]="isDateDisabled(day)"
+             [class.in-range]="isInRange(day)"
+             [class.range-start]="isRangeStart(day)"
+             [class.range-end]="isRangeEnd(day)"
              (click)="selectDay(day)">
           {{ day.day }}
         </div>

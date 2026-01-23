@@ -38,6 +38,10 @@ export class AppComponent implements AfterViewInit {
   pageSize: number = 10;
   totalRecords: number = 0;
 
+  // Global date range picker state
+  globalFromDate: string = '2025-09-01';
+  globalToDate: string = '2025-09-30';
+
   gridApiConfig: GridApiConfig = {
     mode: 'server', // Server-side filtering enabled for mixed mode
     debounceTime: 500, // Wait 500ms after last filter change before calling API
@@ -298,9 +302,9 @@ export class AppComponent implements AfterViewInit {
       filter: CustomDateFilterComponent,
       filterParams: {
         filterMode: 'client',
-        filterType: 'date',
-        fromDate: '2025-09-01',  // Example: Only allow dates from Sep 1, 2025
-        toDate: '2025-09-30'     // Example: Only allow dates until Sep 30, 2025
+        filterType: 'date',  // Single date picker with range restriction
+        fromDate: this.globalFromDate,
+        toDate: this.globalToDate
       },
       minWidth: 180,
       sortable: true
@@ -393,5 +397,39 @@ export class AppComponent implements AfterViewInit {
     this.gridApi = params.api;
     // Auto-size columns to fit content
     params.api.sizeColumnsToFit();
+  }
+
+  onDateRangeChange(event: Event, type: 'from' | 'to'): void {
+    const input = event.target as HTMLInputElement;
+    const value = input.value;
+
+    if (type === 'from') {
+      this.globalFromDate = value;
+    } else {
+      this.globalToDate = value;
+    }
+
+    // Update the startDateTime column's filterParams
+    const updatedColumnDefs = this.columnDefs.map(col => {
+      if (col.field === 'startDateTime') {
+        return {
+          ...col,
+          filterParams: {
+            ...col.filterParams,
+            fromDate: this.globalFromDate,
+            toDate: this.globalToDate
+          }
+        };
+      }
+      return col;
+    });
+
+    // Trigger grid refresh with new column definitions
+    this.columnDefs = updatedColumnDefs;
+
+    // Force the grid to re-read column definitions
+    if (this.gridApi) {
+      this.gridApi.setGridOption('columnDefs', this.columnDefs);
+    }
   }
 }

@@ -6,7 +6,7 @@ import { IDoesFilterPassParams, IFilterParams } from 'ag-grid-community';
 
 export interface CustomDateFilterParams extends IFilterParams {
     filterMode?: 'client' | 'server';
-    filterType?: string;
+    filterType?: 'date' | 'date-range';
     fromDate?: string | Date;  // Minimum selectable date
     toDate?: string | Date;    // Maximum selectable date
     onFilterChange?: (date: string, timeFrom?: string, timeTo?: string) => void;
@@ -29,6 +29,7 @@ interface CalendarDay {
 export class CustomDateFilterComponent implements IFilterAngularComp {
     params!: CustomDateFilterParams;
 
+    // ============ SINGLE DATE MODE STATE ============
     // Applied State (The Source of Truth)
     selectedDate: Date | null = null;
     timeFrom: string = '';
@@ -39,9 +40,20 @@ export class CustomDateFilterComponent implements IFilterAngularComp {
     tempTimeFrom: string = '';
     tempTimeTo: string = '';
 
+    // ============ DATE RANGE MODE STATE ============
+    // Applied State
+    selectedStartDate: Date | null = null;
+    selectedEndDate: Date | null = null;
+
+    // UI State (Pending Changes)
+    tempSelectedStartDate: Date | null = null;
+    tempSelectedEndDate: Date | null = null;
+    rangeSelectionStep: 'start' | 'end' = 'start';
+
+    // ============ COMMON STATE ============
     currentMonth: Date = new Date();
     filterMode: 'client' | 'server' = 'client';
-    filterType: string = 'date';
+    filterType: 'date' | 'date-range' = 'date';
 
     // Date range constraints
     fromDate: Date | null = null;
@@ -85,7 +97,90 @@ export class CustomDateFilterComponent implements IFilterAngularComp {
         this.toDate = this.parseDate(params.toDate);
 
         this.generateYears();
+
+        // Initialize calendar to show fromDate if configured, otherwise current date
+        if (this.fromDate) {
+            this.currentMonth = new Date(this.fromDate);
+        }
+
         this.generateCalendar();
+    }
+
+    // Called when column definition params change dynamically
+    refresh(params: CustomDateFilterParams): boolean {
+        this.params = params;
+
+        // Re-parse date range constraints with new values
+        this.fromDate = this.parseDate(params.fromDate);
+        this.toDate = this.parseDate(params.toDate);
+
+        // Check if current filter is still valid within new range
+        let filterInvalidated = false;
+
+        if (this.filterType === 'date-range') {
+            // Date range mode: check if start or end date is out of range
+            if (this.selectedStartDate && this.isDateOutOfRange(this.selectedStartDate)) {
+                filterInvalidated = true;
+            }
+            if (this.selectedEndDate && this.isDateOutOfRange(this.selectedEndDate)) {
+                filterInvalidated = true;
+            }
+        } else {
+            // Single date mode: check if selected date is out of range
+            if (this.selectedDate && this.isDateOutOfRange(this.selectedDate)) {
+                filterInvalidated = true;
+            }
+        }
+
+        // If filter is now invalid, clear it
+        if (filterInvalidated) {
+            this.clearFilterState();
+            // Notify grid that filter has changed
+            this.params.filterChangedCallback();
+        }
+
+        // Update calendar view to show new fromDate
+        if (this.fromDate) {
+            this.currentMonth = new Date(this.fromDate);
+        }
+
+        // Regenerate calendar to reflect new constraints
+        this.generateCalendar();
+
+        return true; // Return true to indicate the filter was successfully refreshed
+    }
+
+    // Helper to check if a date is outside the allowed range
+    private isDateOutOfRange(date: Date): boolean {
+        const dateOnly = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+
+        if (this.fromDate) {
+            const fromStart = new Date(this.fromDate.getFullYear(), this.fromDate.getMonth(), this.fromDate.getDate());
+            if (dateOnly < fromStart) return true;
+        }
+
+        if (this.toDate) {
+            const toEnd = new Date(this.toDate.getFullYear(), this.toDate.getMonth(), this.toDate.getDate());
+            if (dateOnly > toEnd) return true;
+        }
+
+        return false;
+    }
+
+    // Clear all filter state
+    private clearFilterState(): void {
+        this.selectedDate = null;
+        this.selectedStartDate = null;
+        this.selectedEndDate = null;
+        this.timeFrom = '';
+        this.timeTo = '';
+
+        this.tempSelectedDate = null;
+        this.tempSelectedStartDate = null;
+        this.tempSelectedEndDate = null;
+        this.tempTimeFrom = '';
+        this.tempTimeTo = '';
+        this.rangeSelectionStep = 'start';
     }
 
     private parseDate(date: string | Date | undefined): Date | null {
@@ -112,13 +207,40 @@ export class CustomDateFilterComponent implements IFilterAngularComp {
 
     // Called every time the popup opens
     afterGuiAttached(params?: any): void {
-        // Sync UI state with Applied state
-        this.tempSelectedDate = this.selectedDate ? new Date(this.selectedDate) : null;
-        this.tempTimeFrom = this.timeFrom;
-        this.tempTimeTo = this.timeTo;
+        if (this.filterType === 'date-range') {
+            // Sync UI state with Applied state for range mode
+            this.tempSelectedStartDate = this.selectedStartDate ? new Date(this.selectedStartDate) : null;
+            this.tempSelectedEndDate = this.selectedEndDate ? new Date(this.selectedEndDate) : null;
+            this.tempTimeFrom = this.timeFrom;
+            this.tempTimeTo = this.timeTo;
 
-        // Reset calendar view to currently selected date or today
-        this.currentMonth = this.tempSelectedDate ? new Date(this.tempSelectedDate) : new Date();
+            // Reset selection step
+            this.rangeSelectionStep = this.tempSelectedStartDate && !this.tempSelectedEndDate ? 'end' : 'start';
+
+            // Navigate to configured fromDate or selected start date
+            if (this.tempSelectedStartDate) {
+                this.currentMonth = new Date(this.tempSelectedStartDate);
+            } else if (this.fromDate) {
+                this.currentMonth = new Date(this.fromDate);
+            } else {
+                this.currentMonth = new Date();
+            }
+        } else {
+            // Single date mode
+            this.tempSelectedDate = this.selectedDate ? new Date(this.selectedDate) : null;
+            this.tempTimeFrom = this.timeFrom;
+            this.tempTimeTo = this.timeTo;
+
+            // Navigate to configured fromDate or selected date
+            if (this.tempSelectedDate) {
+                this.currentMonth = new Date(this.tempSelectedDate);
+            } else if (this.fromDate) {
+                this.currentMonth = new Date(this.fromDate);
+            } else {
+                this.currentMonth = new Date();
+            }
+        }
+
         this.generateCalendar();
     }
 
@@ -149,6 +271,9 @@ export class CustomDateFilterComponent implements IFilterAngularComp {
     }
 
     isFilterActive(): boolean {
+        if (this.filterType === 'date-range') {
+            return this.selectedStartDate !== null && this.selectedEndDate !== null;
+        }
         return this.selectedDate !== null;
     }
 
@@ -184,30 +309,61 @@ export class CustomDateFilterComponent implements IFilterAngularComp {
             return false;
         }
 
-        // Compare dates (ignoring time)
-        const selectedDateStr = this.formatDate(this.selectedDate!);
-        const cellDateStr = this.formatDate(cellDate);
+        if (this.filterType === 'date-range') {
+            // Date range mode: check if cell date falls within the selected range
+            const cellDateOnly = new Date(cellDate.getFullYear(), cellDate.getMonth(), cellDate.getDate());
+            const startDateOnly = new Date(this.selectedStartDate!.getFullYear(), this.selectedStartDate!.getMonth(), this.selectedStartDate!.getDate());
+            const endDateOnly = new Date(this.selectedEndDate!.getFullYear(), this.selectedEndDate!.getMonth(), this.selectedEndDate!.getDate());
 
-        if (cellDateStr !== selectedDateStr) {
-            return false;
-        }
-
-        // If time range is specified, check time
-        if (this.timeFrom || this.timeTo) {
-            const cellTime = this.formatTime(cellDate);
-            const cellMinutes = this.timeToMinutes(cellTime);
-
-            if (this.timeFrom) {
-                const fromMinutes = this.timeToMinutes(this.timeFrom);
-                if (cellMinutes < fromMinutes) {
-                    return false;
-                }
+            if (cellDateOnly < startDateOnly || cellDateOnly > endDateOnly) {
+                return false;
             }
 
-            if (this.timeTo) {
-                const toMinutes = this.timeToMinutes(this.timeTo);
-                if (cellMinutes > toMinutes) {
-                    return false;
+            // If time range is specified, check time
+            if (this.timeFrom || this.timeTo) {
+                const cellTime = this.formatTime(cellDate);
+                const cellMinutes = this.timeToMinutes(cellTime);
+
+                if (this.timeFrom) {
+                    const fromMinutes = this.timeToMinutes(this.timeFrom);
+                    if (cellMinutes < fromMinutes) {
+                        return false;
+                    }
+                }
+
+                if (this.timeTo) {
+                    const toMinutes = this.timeToMinutes(this.timeTo);
+                    if (cellMinutes > toMinutes) {
+                        return false;
+                    }
+                }
+            }
+        } else {
+            // Single date mode
+            const selectedDateStr = this.formatDate(this.selectedDate!);
+            const cellDateStr = this.formatDate(cellDate);
+
+            if (cellDateStr !== selectedDateStr) {
+                return false;
+            }
+
+            // If time range is specified, check time
+            if (this.timeFrom || this.timeTo) {
+                const cellTime = this.formatTime(cellDate);
+                const cellMinutes = this.timeToMinutes(cellTime);
+
+                if (this.timeFrom) {
+                    const fromMinutes = this.timeToMinutes(this.timeFrom);
+                    if (cellMinutes < fromMinutes) {
+                        return false;
+                    }
+                }
+
+                if (this.timeTo) {
+                    const toMinutes = this.timeToMinutes(this.timeTo);
+                    if (cellMinutes > toMinutes) {
+                        return false;
+                    }
                 }
             }
         }
@@ -216,34 +372,74 @@ export class CustomDateFilterComponent implements IFilterAngularComp {
     }
 
     getModel() {
-        return this.isFilterActive() ? {
-            filterType: this.filterType,
+        if (!this.isFilterActive()) {
+            return null;
+        }
+
+        if (this.filterType === 'date-range') {
+            return {
+                filterType: 'date-range',
+                startDate: this.formatDate(this.selectedStartDate!),
+                endDate: this.formatDate(this.selectedEndDate!),
+                timeFrom: this.timeFrom,
+                timeTo: this.timeTo
+            };
+        }
+
+        return {
+            filterType: 'date',
             date: this.formatDate(this.selectedDate!),
             timeFrom: this.timeFrom,
             timeTo: this.timeTo
-        } : null;
+        };
     }
 
     setModel(model: any): void {
-        if (model && model.date) {
-            this.selectedDate = new Date(model.date);
-            this.timeFrom = model.timeFrom || '';
-            this.timeTo = model.timeTo || '';
+        if (model) {
+            if (model.filterType === 'date-range' || (model.startDate && model.endDate)) {
+                // Date range model
+                this.selectedStartDate = model.startDate ? new Date(model.startDate) : null;
+                this.selectedEndDate = model.endDate ? new Date(model.endDate) : null;
+                this.timeFrom = model.timeFrom || '';
+                this.timeTo = model.timeTo || '';
 
-            // Also sync temp state immediately just in case
-            this.tempSelectedDate = new Date(this.selectedDate);
-            this.tempTimeFrom = this.timeFrom;
-            this.tempTimeTo = this.timeTo;
-            this.currentMonth = new Date(this.selectedDate);
-            this.generateCalendar();
+                // Sync temp state
+                this.tempSelectedStartDate = this.selectedStartDate ? new Date(this.selectedStartDate) : null;
+                this.tempSelectedEndDate = this.selectedEndDate ? new Date(this.selectedEndDate) : null;
+                this.tempTimeFrom = this.timeFrom;
+                this.tempTimeTo = this.timeTo;
+
+                if (this.selectedStartDate) {
+                    this.currentMonth = new Date(this.selectedStartDate);
+                    this.generateCalendar();
+                }
+            } else if (model.date) {
+                // Single date model
+                this.selectedDate = new Date(model.date);
+                this.timeFrom = model.timeFrom || '';
+                this.timeTo = model.timeTo || '';
+
+                // Sync temp state
+                this.tempSelectedDate = new Date(this.selectedDate);
+                this.tempTimeFrom = this.timeFrom;
+                this.tempTimeTo = this.timeTo;
+                this.currentMonth = new Date(this.selectedDate);
+                this.generateCalendar();
+            }
         } else {
+            // Clear all state
             this.selectedDate = null;
+            this.selectedStartDate = null;
+            this.selectedEndDate = null;
             this.timeFrom = '';
             this.timeTo = '';
 
             this.tempSelectedDate = null;
+            this.tempSelectedStartDate = null;
+            this.tempSelectedEndDate = null;
             this.tempTimeFrom = '';
             this.tempTimeTo = '';
+            this.rangeSelectionStep = 'start';
         }
     }
 
@@ -315,8 +511,30 @@ export class CustomDateFilterComponent implements IFilterAngularComp {
         // Prevent selection of disabled dates
         if (this.isDateDisabled(day)) return;
 
-        // Update TEMP state only
-        this.tempSelectedDate = new Date(day.year, day.month, day.day);
+        const selectedDate = new Date(day.year, day.month, day.day);
+
+        if (this.filterType === 'date-range') {
+            // Date range mode: two-step selection
+            if (this.rangeSelectionStep === 'start') {
+                // First click: set start date, clear end date
+                this.tempSelectedStartDate = selectedDate;
+                this.tempSelectedEndDate = null;
+                this.rangeSelectionStep = 'end';
+            } else {
+                // Second click: set end date
+                if (selectedDate < this.tempSelectedStartDate!) {
+                    // If end date is before start date, swap them
+                    this.tempSelectedEndDate = this.tempSelectedStartDate;
+                    this.tempSelectedStartDate = selectedDate;
+                } else {
+                    this.tempSelectedEndDate = selectedDate;
+                }
+                this.rangeSelectionStep = 'start';
+            }
+        } else {
+            // Single date mode
+            this.tempSelectedDate = selectedDate;
+        }
 
         if (day.month !== this.currentMonth.getMonth()) {
             this.currentMonth = new Date(day.year, day.month, 1);
@@ -325,11 +543,41 @@ export class CustomDateFilterComponent implements IFilterAngularComp {
     }
 
     isSelectedDay(day: CalendarDay): boolean {
-        // Check against TEMP state
+        if (this.filterType === 'date-range') {
+            // Check if it's the start or end date in range mode
+            return this.isRangeStart(day) || this.isRangeEnd(day);
+        }
+
+        // Single date mode
         if (!this.tempSelectedDate) return false;
         return day.day === this.tempSelectedDate.getDate() &&
             day.month === this.tempSelectedDate.getMonth() &&
             day.year === this.tempSelectedDate.getFullYear();
+    }
+
+    isRangeStart(day: CalendarDay): boolean {
+        if (!this.tempSelectedStartDate) return false;
+        return day.day === this.tempSelectedStartDate.getDate() &&
+            day.month === this.tempSelectedStartDate.getMonth() &&
+            day.year === this.tempSelectedStartDate.getFullYear();
+    }
+
+    isRangeEnd(day: CalendarDay): boolean {
+        if (!this.tempSelectedEndDate) return false;
+        return day.day === this.tempSelectedEndDate.getDate() &&
+            day.month === this.tempSelectedEndDate.getMonth() &&
+            day.year === this.tempSelectedEndDate.getFullYear();
+    }
+
+    isInRange(day: CalendarDay): boolean {
+        if (this.filterType !== 'date-range') return false;
+        if (!this.tempSelectedStartDate || !this.tempSelectedEndDate) return false;
+
+        const date = new Date(day.year, day.month, day.day);
+        const startDate = new Date(this.tempSelectedStartDate.getFullYear(), this.tempSelectedStartDate.getMonth(), this.tempSelectedStartDate.getDate());
+        const endDate = new Date(this.tempSelectedEndDate.getFullYear(), this.tempSelectedEndDate.getMonth(), this.tempSelectedEndDate.getDate());
+
+        return date > startDate && date < endDate;
     }
 
     isToday(day: CalendarDay): boolean {
@@ -339,30 +587,64 @@ export class CustomDateFilterComponent implements IFilterAngularComp {
             day.year === today.getFullYear();
     }
 
-    onApply(): void {
-        // Commit changes: Temp -> Applied
-        this.selectedDate = this.tempSelectedDate;
-        this.timeFrom = this.tempTimeFrom;
-        this.timeTo = this.tempTimeTo;
-
-        if (this.selectedDate) {
-            this.params.filterChangedCallback();
+    // Helper to display selected date(s) in the header
+    getSelectedRangeDisplay(): string {
+        if (this.filterType === 'date-range') {
+            const startStr = this.tempSelectedStartDate ? this.formatDisplayDate(this.tempSelectedStartDate) : '---';
+            const endStr = this.tempSelectedEndDate ? this.formatDisplayDate(this.tempSelectedEndDate) : '---';
+            return `${startStr} → ${endStr}`;
         }
-        // Ideally close popup here
+        return this.tempSelectedDate ? this.formatDisplayDate(this.tempSelectedDate) : '---';
+    }
+
+    formatDisplayDate(date: Date): string {
+        const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+        return `${months[date.getMonth()]} ${date.getDate()}, ${date.getFullYear()}`;
+    }
+
+    onApply(): void {
+        if (this.filterType === 'date-range') {
+            // Commit changes: Temp -> Applied for range mode
+            this.selectedStartDate = this.tempSelectedStartDate;
+            this.selectedEndDate = this.tempSelectedEndDate;
+            this.timeFrom = this.tempTimeFrom;
+            this.timeTo = this.tempTimeTo;
+
+            if (this.selectedStartDate && this.selectedEndDate) {
+                this.params.filterChangedCallback();
+            }
+        } else {
+            // Single date mode
+            this.selectedDate = this.tempSelectedDate;
+            this.timeFrom = this.tempTimeFrom;
+            this.timeTo = this.tempTimeTo;
+
+            if (this.selectedDate) {
+                this.params.filterChangedCallback();
+            }
+        }
+        // Close popup
         this.params.api.hidePopupMenu();
     }
 
     onCancel(): void {
-        // Clear filter
+        // Clear all filter state
         this.selectedDate = null;
+        this.selectedStartDate = null;
+        this.selectedEndDate = null;
         this.timeFrom = '';
         this.timeTo = '';
+
         // Reset temp state
         this.tempSelectedDate = null;
+        this.tempSelectedStartDate = null;
+        this.tempSelectedEndDate = null;
         this.tempTimeFrom = '';
         this.tempTimeTo = '';
+        this.rangeSelectionStep = 'start';
 
-        this.currentMonth = new Date();
+        // Reset calendar to fromDate if configured, otherwise today
+        this.currentMonth = this.fromDate ? new Date(this.fromDate) : new Date();
         this.generateCalendar();
 
         this.params.filterChangedCallback();
